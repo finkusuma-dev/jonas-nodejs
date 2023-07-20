@@ -1,0 +1,15 @@
+{
+  "name": "how-nodejs-works",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start-event": "node event.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "fin",
+  "license": "ISC",
+  "dependencies": {
+    "superagent": "^8.0.9"
+  }
+}
