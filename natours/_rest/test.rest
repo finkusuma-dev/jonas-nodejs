@@ -1,4 +1,20 @@
 get http://127.0.0.1:3000
 
+# ###
+# post http://127.0.0.1:3000
+
 ###
-post http://127.0.0.1:3000
+get http://127.0.0.1:3000/api/v1/tours
+
+###
+get http://127.0.0.1:3000/api/v1/tours/91
+
+###
+POST http://127.0.0.1:3000/api/v1/tours
+Content-Type: application/json
+
+{
+  "name": "Food Eater",
+  "duration" : 5,
+  "difficulty" : "easy"
+}
