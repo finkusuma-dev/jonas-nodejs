@@ -7,7 +7,7 @@ get http://127.0.0.1:3000
 get http://127.0.0.1:3000/api/v1/tours
 
 ###
-get http://127.0.0.1:3000/api/v1/tours/91
+get http://127.0.0.1:3000/api/v1/tours/1
 
 ###
 POST http://127.0.0.1:3000/api/v1/tours
@@ -18,3 +18,15 @@ Content-Type: application/json
   "duration" : 5,
   "difficulty" : "easy"
 }
+
+### UPDATE TOUR
+PATCH  http://127.0.0.1:3000/api/v1/tours/1
+Content-Type: application/json
+
+{
+  "duration" : 3,
+  "difficulty" : "medium"
+}
+
+### DELETE TOUR
+DELETE  http://127.0.0.1:3000/api/v1/tours/9
