@@ -11,6 +11,14 @@ function errorJson(res, status, msg) {
   });
 }
 
+exports.checkId = (req, res, next) => {
+  const id = req.params['id'];
+  const user = users.find((user) => user._id == id);
+  if (!user) return errorJson(res, 404, 'Invalid ID');
+
+  next();
+};
+
 exports.getAllUsers = (req, res) => {
   res.json({
     status: 'success',
@@ -63,8 +71,8 @@ exports.updateUser = (req, res) => {
   const id = req.params['id'];
   //console.log(id, req.body);
 
-  const user = users.find((user) => user._id == id);
-  if (!user) return errorJson(res, 404, 'Invalid ID');
+  // const user = users.find((user) => user._id == id);
+  // if (!user) return errorJson(res, 404, 'Invalid ID');
   //console.log('...req.body', { ...req.body });
 
   let newUser = Object.assign({}, user);
