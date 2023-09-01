@@ -5,6 +5,7 @@ const userRouter = require('./routes/userRouter');
 const app = express();
 
 app.use(express.json());
+app.use(express.static(`${__dirname}/public`));
 
 // app.get('/', (req, res) => {
 //   res.json({ success: true });
