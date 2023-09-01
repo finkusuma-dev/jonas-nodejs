@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 let users = JSON.parse(
-  fs.readFileSync(`${__dirname}/../dev-data/data/users.json`)
+  fs.readFileSync(`${__dirname}/../dev-data/data/users.json`),
 );
 
 function errorJson(res, status, msg) {
@@ -12,8 +12,8 @@ function errorJson(res, status, msg) {
 }
 
 exports.checkId = (req, res, next) => {
-  const id = req.params['id'];
-  const user = users.find((user) => user._id == id);
+  const { id } = req.params;
+  const user = users.find((el) => el._id === id);
   if (!user) return errorJson(res, 404, 'Invalid ID');
 
   next();
@@ -30,10 +30,10 @@ exports.getAllUsers = (req, res) => {
 };
 
 exports.getUser = (req, res) => {
-  const id = req.params['id'];
+  const { id } = req.params;
   console.log('id', id);
 
-  const user = users.find((user) => user._id == id);
+  const user = users.find((el) => el._id === id);
   console.log('user', user);
   if (!user) return errorJson(res, 404, 'Invalid ID');
   // console.log('user', user);
@@ -49,12 +49,10 @@ exports.getUser = (req, res) => {
 exports.createNewUser = (req, res) => {
   console.log(req.body);
 
-  const newUser = Object.assign(
-    {
-      _id: users.length + 1,
-    },
-    req.body
-  );
+  const newUser = {
+    ...req.body,
+    _id: (users.length + 1).toString(),
+  };
 
   users.push(newUser);
 
@@ -68,24 +66,23 @@ exports.createNewUser = (req, res) => {
 };
 
 exports.updateUser = (req, res) => {
-  const id = req.params['id'];
+  const { id } = req.params;
   //console.log(id, req.body);
 
-  // const user = users.find((user) => user._id == id);
+  const user = users.find((aUser) => aUser._id === id);
   // if (!user) return errorJson(res, 404, 'Invalid ID');
   //console.log('...req.body', { ...req.body });
 
-  let newUser = Object.assign({}, user);
+  // let newUser = Object.assign({}, user);
 
-  newUser = { ...newUser, ...req.body };
+  const newUser = { ...user, ...req.body };
 
   // users.splice(id, 1, newUser);
-  users = users.map((user) => {
-    if (user._id == id) {
+  users = users.map((aUser) => {
+    if (aUser._id === id) {
       return newUser;
-    } else {
-      return user;
     }
+    return aUser;
   });
 
   ///console.log(newUser);
@@ -99,7 +96,7 @@ exports.updateUser = (req, res) => {
 };
 
 exports.deleteUser = (req, res) => {
-  const id = req.params['id'];
+  const { id } = req.params;
   //console.log(id, req.body);
 
   // const user = users.find((user) => user._id == id);
@@ -109,7 +106,7 @@ exports.deleteUser = (req, res) => {
   //     return user;
   //   }
   // });
-  const idx = users.findIndex((user) => user._id == id);
+  const idx = users.findIndex((user) => user._id === id);
   if (!idx) return errorJson(res, 404, 'Invalid ID');
 
   users.splice(idx, 1);

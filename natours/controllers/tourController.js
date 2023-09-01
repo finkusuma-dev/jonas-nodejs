@@ -1,7 +1,7 @@
 const fs = require('fs');
 
-let tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`),
 );
 
 function errorJson(res, status, msg) {
@@ -12,8 +12,8 @@ function errorJson(res, status, msg) {
 }
 
 exports.checkId = (req, res, next) => {
-  const id = Number(req.params['id']);
-  const tour = tours.find((tour) => tour.id === id);
+  const id = Number(req.params.id);
+  const tour = tours.find((el) => el.id === id);
   if (!tour) return errorJson(res, 404, 'Invalid ID');
   next();
 };
@@ -21,7 +21,7 @@ exports.checkId = (req, res, next) => {
 exports.checkBody = (req, res, next) => {
   // console.log('checkBody', req.body);
   // console.log('req.body[price]', req.body['price']);
-  if (!req.body['name'] || !req.body['price'])
+  if (!req.body.name || !req.body.price)
     return errorJson(res, 400, 'Invalid Request. Missing name or price');
   next();
 };
@@ -37,10 +37,10 @@ exports.getAllTours = (req, res) => {
 };
 
 exports.getTour = (req, res) => {
-  const id = Number(req.params['id']);
+  const id = Number(req.params.id);
   // console.log(id);
 
-  const tour = tours.find((tour) => tour.id === id);
+  const tour = tours.find((el) => el.id === id);
   if (!tour) return errorJson(res, 404, 'Invalid ID');
   // console.log('tour', tour);
 
@@ -55,12 +55,16 @@ exports.getTour = (req, res) => {
 exports.createNewTour = (req, res) => {
   // console.log(req.body);
 
-  const newTour = Object.assign(
-    {
-      id: tours[tours.length - 1].id + 1,
-    },
-    req.body
-  );
+  const newTour = {
+    ...req.body,
+    id: tours[tours.length - 1].id + 1,
+  };
+  // const newTour = Object.assign(
+  //   {
+  //     id: tours[tours.length - 1].id + 1,
+  //   },
+  //   req.body,
+  // );
 
   tours.push(newTour);
 
@@ -74,16 +78,16 @@ exports.createNewTour = (req, res) => {
 };
 
 exports.updateTour = (req, res) => {
-  const id = Number(req.params['id']);
+  const id = Number(req.params.id);
   //console.log(id, req.body);
 
-  // const tour = tours.find((tour) => tour.id === id);
+  const tour = tours.find((el) => el.id === id);
   // if (!tour) return errorJson(res, 404, 'Invalid ID');
   //console.log('...req.body', { ...req.body });
 
-  let newTour = Object.assign({}, tour);
+  // let newTour = Object.assign({}, tour);
 
-  newTour = { ...newTour, ...req.body };
+  const newTour = { ...tour, ...req.body };
 
   tours.splice(id, 1, newTour);
 
@@ -98,10 +102,10 @@ exports.updateTour = (req, res) => {
 };
 
 exports.deleteTour = (req, res) => {
-  const id = Number(req.params['id']);
+  const id = Number(req.params.id);
   //console.log(id, req.body);
 
-  const tour = tours.find((tour) => tour.id === id);
+  const tour = tours.find((el) => el.id === id);
   if (!tour) return errorJson(res, 404, 'Invalid ID');
 
   tours.splice(id, 1, 0);
