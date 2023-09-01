@@ -16,7 +16,8 @@ Content-Type: application/json
 {
   "name": "Food Eater",
   "duration" : 5,
-  "difficulty" : "easy"
+  "difficulty" : "easy",
+  "price" : 200
 }
 
 ### UPDATE TOUR

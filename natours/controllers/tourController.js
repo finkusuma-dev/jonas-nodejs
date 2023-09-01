@@ -18,6 +18,14 @@ exports.checkId = (req, res, next) => {
   next();
 };
 
+exports.checkBody = (req, res, next) => {
+  // console.log('checkBody', req.body);
+  // console.log('req.body[price]', req.body['price']);
+  if (!req.body['name'] || !req.body['price'])
+    return errorJson(res, 400, 'Invalid Request. Missing name or price');
+  next();
+};
+
 exports.getAllTours = (req, res) => {
   res.json({
     status: 'success',
@@ -45,7 +53,7 @@ exports.getTour = (req, res) => {
 };
 
 exports.createNewTour = (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
 
   const newTour = Object.assign(
     {
