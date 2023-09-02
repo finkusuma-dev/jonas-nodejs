@@ -1,7 +1,9 @@
 const express = require('express');
 const morgan = require('morgan');
+
 const tourRouter = require('./routes/tourRouter');
 const userRouter = require('./routes/userRouter');
+// const connection = require('./models/connection');
 
 const app = express();
 
