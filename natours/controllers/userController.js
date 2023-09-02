@@ -31,10 +31,10 @@ exports.getAllUsers = (req, res) => {
 
 exports.getUser = (req, res) => {
   const { id } = req.params;
-  console.log('id', id);
+  // console.log('id', id);
 
   const user = users.find((el) => el._id === id);
-  console.log('user', user);
+  // console.log('user', user);
   if (!user) return errorJson(res, 404, 'Invalid ID');
   // console.log('user', user);
 
@@ -47,7 +47,7 @@ exports.getUser = (req, res) => {
 };
 
 exports.createNewUser = (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
 
   const newUser = {
     ...req.body,
