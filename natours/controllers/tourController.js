@@ -17,21 +17,21 @@ function errorJson(res, status, msg) {
   });
 }
 
-exports.checkId = async (req, res, next) => {
-  const { id } = req.params;
-  const tour = await Tour.findOne({ _id: id });
-  // const tour = tours.find((el) => el.id === id);
-  if (!tour) return errorJson(res, 404, 'Invalid ID');
-  next();
-};
+// exports.checkId = async (req, res, next) => {
+//   const { id } = req.params;
+//   const tour = await Tour.findOne({ _id: id });
+//   // const tour = tours.find((el) => el.id === id);
+//   if (!tour) return errorJson(res, 404, 'Invalid ID');
+//   next();
+// };
 
-exports.checkBody = (req, res, next) => {
-  // console.log('checkBody', req.body);
-  // console.log('req.body[price]', req.body['price']);
-  if (!req.body.name || !req.body.price)
-    return errorJson(res, 400, 'Invalid Request. Missing name or price');
-  next();
-};
+// exports.checkBody = (req, res, next) => {
+//   // console.log('checkBody', req.body);
+//   // console.log('req.body[price]', req.body['price']);
+//   if (!req.body.name || !req.body.price)
+//     return errorJson(res, 400, 'Invalid Request. Missing name or price');
+//   next();
+// };
 
 exports.getAllTours = async (req, res) => {
   const tours = await Tour.find({});
@@ -66,11 +66,11 @@ exports.getTour = async (req, res) => {
 
 exports.createNewTour = async (req, res) => {
   try {
-    const newTour = new Tour({
-      ...req.body,
-    });
-    await newTour.save();
-
+    // const newTour = new Tour({
+    //   ...req.body,
+    // });
+    // await newTour.save();
+    const newTour = await Tour.create(req.body);
     const toursLength = await Tour.estimatedDocumentCount();
 
     res.status(201).json({
@@ -81,7 +81,8 @@ exports.createNewTour = async (req, res) => {
       },
     });
   } catch (err) {
-    return errorJson(res, 404, 'Create a new tour failed', err);
+    return errorJson(res, 400, err.message);
+    // return errorJson(res, 400, 'Create a new tour failed', err);
   }
 };
 
@@ -99,7 +100,8 @@ exports.updateTour = async (req, res) => {
       },
     });
   } catch (err) {
-    return errorJson(res, 404, 'Update tour failed', err);
+    return errorJson(res, 400, err.message);
+    // return errorJson(res, 400, 'Update tour failed', err);
   }
 
   // tours.splice(id, 1, newTour);
@@ -125,6 +127,7 @@ exports.deleteTour = async (req, res) => {
       data: null,
     });
   } catch (err) {
-    return errorJson(res, 404, 'Delete tour failed', err);
+    return errorJson(res, 400, err.message);
+    // return errorJson(res, 400, 'Delete tour failed', err);
   }
 };

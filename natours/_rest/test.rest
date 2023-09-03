@@ -17,7 +17,7 @@ Content-Type: application/json
   "name": "A Food Eater",
   "duration" : 5,
   "difficulty" : "easy",
-  "price" : 200
+  "price" : 230
 }
 
 ### UPDATE TOUR
@@ -29,7 +29,7 @@ Content-Type: application/json
 }
 
 ### DELETE TOUR
-DELETE  http://127.0.0.1:3000/api/v1/tours/64f3daec29fc0a4246aa2b33
+DELETE  http://127.0.0.1:3000/api/v1/tours/64f47ccfc7bc6265fcaf160b
 
 
 ####################################
