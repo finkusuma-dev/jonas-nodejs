@@ -1,8 +1,14 @@
-const fs = require('fs');
+// const fs = require('fs');
+const Tour = require('../models/tourModel');
 
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`),
-);
+// const tours = JSON.parse(
+//   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`),
+//);
+
+// let tours = [];
+// tourModel.find({}).then((docs) => {
+//   tours = [...docs];
+// });
 
 function errorJson(res, status, msg) {
   return res.status(status).json({
@@ -11,9 +17,10 @@ function errorJson(res, status, msg) {
   });
 }
 
-exports.checkId = (req, res, next) => {
-  const id = Number(req.params.id);
-  const tour = tours.find((el) => el.id === id);
+exports.checkId = async (req, res, next) => {
+  const { id } = req.params;
+  const tour = await Tour.findOne({ _id: id });
+  // const tour = tours.find((el) => el.id === id);
   if (!tour) return errorJson(res, 404, 'Invalid ID');
   next();
 };
@@ -26,7 +33,8 @@ exports.checkBody = (req, res, next) => {
   next();
 };
 
-exports.getAllTours = (req, res) => {
+exports.getAllTours = async (req, res) => {
+  const tours = await Tour.find({});
   res.json({
     status: 'success',
     results: tours.length,
@@ -36,11 +44,15 @@ exports.getAllTours = (req, res) => {
   });
 };
 
-exports.getTour = (req, res) => {
-  const id = Number(req.params.id);
+exports.getTour = async (req, res) => {
+  const { id } = req.params;
   // console.log(id);
 
-  const tour = tours.find((el) => el.id === id);
+  // const tour = tours.find((el) => el.id === id);
+  const tour = await Tour.findOne({ _id: id }).catch((err) =>
+    console.log('getTour failed', err),
+  );
+  console.log('found tour', tour);
   if (!tour) return errorJson(res, 404, 'Invalid ID');
   // console.log('tour', tour);
 
@@ -52,69 +64,67 @@ exports.getTour = (req, res) => {
   });
 };
 
-exports.createNewTour = (req, res) => {
-  // console.log(req.body);
+exports.createNewTour = async (req, res) => {
+  try {
+    const newTour = new Tour({
+      ...req.body,
+    });
+    await newTour.save();
 
-  const newTour = {
-    ...req.body,
-    id: tours[tours.length - 1].id + 1,
-  };
-  // const newTour = Object.assign(
-  //   {
-  //     id: tours[tours.length - 1].id + 1,
-  //   },
-  //   req.body,
-  // );
+    const toursLength = await Tour.estimatedDocumentCount();
 
-  tours.push(newTour);
-
-  res.status(201).json({
-    status: 'success',
-    results: tours.length,
-    data: {
-      tour: newTour,
-    },
-  });
+    res.status(201).json({
+      status: 'success',
+      results: toursLength,
+      data: {
+        tour: newTour,
+      },
+    });
+  } catch (err) {
+    return errorJson(res, 404, 'Create a new tour failed', err);
+  }
 };
 
-exports.updateTour = (req, res) => {
-  const id = Number(req.params.id);
+exports.updateTour = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // const a = await Tour.findOne({ _id: id });
+    // console.log('a', a);
+    const result = await Tour.updateOne({ _id: id }, { ...req.body });
+    res.status(200).json({
+      status: 'success',
+      data: {
+        result: result,
+      },
+    });
+  } catch (err) {
+    return errorJson(res, 404, 'Update tour failed', err);
+  }
+
+  // tours.splice(id, 1, newTour);
+
+  ///console.log(newTour);
+};
+
+exports.deleteTour = async (req, res) => {
+  const { id } = req.params;
   //console.log(id, req.body);
 
-  const tour = tours.find((el) => el.id === id);
+  // const tour = tours.find((el) => el.id === id);
   // if (!tour) return errorJson(res, 404, 'Invalid ID');
-  //console.log('...req.body', { ...req.body });
 
-  // let newTour = Object.assign({}, tour);
-
-  const newTour = { ...tour, ...req.body };
-
-  tours.splice(id, 1, newTour);
+  // tours.splice(id, 1, 0);
 
   ///console.log(newTour);
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      newTour,
-    },
-  });
-};
-
-exports.deleteTour = (req, res) => {
-  const id = Number(req.params.id);
-  //console.log(id, req.body);
-
-  const tour = tours.find((el) => el.id === id);
-  if (!tour) return errorJson(res, 404, 'Invalid ID');
-
-  tours.splice(id, 1, 0);
-
-  ///console.log(newTour);
-
-  ///return no content
-  res.status(204).json({
-    status: 'success',
-    data: null,
-  });
+  try {
+    ///return no content
+    await Tour.deleteOne({ _id: id });
+    res.status(204).json({
+      status: 'success',
+      data: null,
+    });
+  } catch (err) {
+    return errorJson(res, 404, 'Delete tour failed', err);
+  }
 };

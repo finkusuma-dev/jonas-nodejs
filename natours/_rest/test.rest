@@ -7,30 +7,29 @@ get http://127.0.0.1:3000
 get http://127.0.0.1:3000/api/v1/tours
 
 ###
-get http://127.0.0.1:3000/api/v1/tours/1
+get http://127.0.0.1:3000/api/v1/tours/A64f3cd5db7edfa66c9c31f52
 
 ###
 POST http://127.0.0.1:3000/api/v1/tours
 Content-Type: application/json
 
 {
-  "name": "Food Eater",
+  "name": "A Food Eater",
   "duration" : 5,
   "difficulty" : "easy",
   "price" : 200
 }
 
 ### UPDATE TOUR
-PATCH  http://127.0.0.1:3000/api/v1/tours/1
+PATCH  http://127.0.0.1:3000/api/v1/tours/64f3cd5db7edfa66c9c31f52
 Content-Type: application/json
 
 {
-  "duration" : 3,
-  "difficulty" : "medium"
+  "price": 250
 }
 
 ### DELETE TOUR
-DELETE  http://127.0.0.1:3000/api/v1/users/9
+DELETE  http://127.0.0.1:3000/api/v1/tours/64f3daec29fc0a4246aa2b33
 
 
 ####################################
