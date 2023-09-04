@@ -2,8 +2,20 @@ import { Schema, Model, model } from 'mongoose';
 
 interface ITour {
   name: string;
-  rating: number;
+  // rating: number;
   price: number;
+  duration: number;
+  maxGrupSize: number;
+  difficulty: string;
+  ratingsAverage: number;
+  ratingsQuantity: number;
+  priceDiscount: number | undefined;
+  summary: string | undefined;
+  description: string;
+  imageCover: string;
+  images: Array<string> | undefined;
+  createdAt: Date;
+  startDates: Array<Date> | undefined;
 }
 
 type TourModelType = Model<ITour>;
@@ -13,37 +25,60 @@ const tourSchema = new Schema<ITour>({
     type: String,
     required: [true, 'a tour must have a name'],
     unique: true,
+    trim: true,
   },
-  rating: {
+  // rating: {
+  //   type: Number,
+  //   default: 4.5,
+  // },
+  duration: {
+    type: Number,
+    required: [true, 'a tour must have a duration'],
+  },
+  maxGrupSize: {
+    type: Number,
+    required: [true, 'a tour must have a maxGrupSize'],
+  },
+  difficulty: {
+    type: String,
+    required: [true, 'a tour must have a difficulty'],
+  },
+  ratingsAverage: {
     type: Number,
     default: 4.5,
+  },
+  ratingsQuantity: {
+    type: Number,
+    default: 0,
   },
   price: {
     type: Number,
     required: [true, 'a tour must have a price'],
   },
+  priceDiscount: Number,
+  summary: {
+    type: String,
+    required: [true, 'a tour must have a summary'],
+    trim: true,
+  },
+  description: {
+    type: String,
+    trim: true,
+  },
+  imageCover: {
+    type: String,
+  },
+  images: {
+    type: [String],
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
+  startDates: [Date],
 });
 // const tourSchema = new Schema<ITour>({
 //   // id: Number,
-//   name: {
-//     type: String,
-//     required: [true, 'a tour must have a name'],
-//     unique: true,
-//   },
-//   // duration: Number,
-//   // maxGrupSize: Number,
-//   // difficulty: String,
-//   // ratingsAverage: Number,
-//   // ratingsQuantity: Number,
-//   rating: {
-//     type: Number,
-//     default: 4.5,
-//   },
-//   price: {
-//     type: Number,
-//     required: [true, 'a tour must have a price'],
-//   },
-//   // summary: String,
 //   // description: String,
 //   // imageCover: String,
 //   // images: String,
