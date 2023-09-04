@@ -11,7 +11,8 @@
     "compile": "tsc --watch",
     "nodemon:dev": "nodemon server.js",
     "nodemon:prod": "NODE_ENV=production nodemon server.js",
-    "start:dev": "npm-run-all --parallel compile nodemon-dev"
+    "start:dev": "npm-run-all --parallel compile nodemon:dev",
+    "start:prod": "npm-run-all --parallel compile nodemon:prod"
   },
   "keywords": [
     "learn_node"
