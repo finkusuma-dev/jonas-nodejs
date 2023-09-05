@@ -41,26 +41,39 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
   try {
     console.log('req.query', req.query);
 
-    const searchParams = { ...req.query };
-
-    /// extract tour object properties
+    /// Extract tour object properties
     const tourProps = Object.keys(Tour.schema.obj);
 
-    for (const [key, value] of Object.entries(req.query)) {
+    /// Create filterParams. Includes only param keys that are in tourProps
+    const filterParams = { ...req.query };
+
+    for (const [key] of Object.entries(req.query)) {
       // console.log(`key: ${key}, value: ${value}`);
       if (!tourProps.includes(key)) {
         /// delete prop from object
-        delete searchParams[key];
+        delete filterParams[key];
       }
     }
-    console.log('searchParams:', searchParams);
+    console.log('searchParams:', filterParams);
 
-    let filtersMap: Map<string, any> = new Map();
+    /// Create advance filtering from filterParams
+    /// i.e: duration=gte:5,lte:9&price=lte:1000&difficuly=easy
+    ///
+    let advFiltersMap: Map<string, any> = new Map();
 
-    for (const [key, value] of Object.entries(searchParams)) {
-      if (['duration', 'maxGroupSize'].includes(key)) {
-        /// advance filtering i.e: duration=gte:5,lte:9
-        /// {duration : {$gte: 5}}
+    for (const [key, value] of Object.entries(filterParams)) {
+      if (
+        [
+          'duration',
+          'maxGroupSize',
+          'ratingsAverage',
+          'ratingsQuantity',
+          'price',
+        ].includes(key) &&
+        String(value).indexOf(':') > -1
+      ) {
+        /// advance filtering for number, i.e: duration=gte:5,lte:9
+        /// filtering object: i.e: { duration: { $gte: 5, $lte: 9 } }
 
         let numberFiltersMap: Map<string, any> = new Map();
         String(value)
@@ -76,35 +89,48 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
               numberFiltersMap.set('$gt', Number(filterValue));
             } else if (filterKey === 'lt') {
               numberFiltersMap.set('$lt', Number(filterValue));
+            } else if (filterKey === 'eq') {
+              numberFiltersMap.set('$eq', Number(filterValue));
             }
           });
-        filtersMap.set(key, Object.fromEntries(numberFiltersMap));
+        advFiltersMap.set(key, Object.fromEntries(numberFiltersMap));
         console.log('filtersMap.set (number):', key);
       } else {
-        filtersMap.set(key, value);
-        console.log('filtersMap.set (string):', key, value);
+        /// normal filtering, i.e: ratingsAverage= 5
+        /// filtering object: i.e: { ratingsAverage: 5 }
+
+        advFiltersMap.set(key, value);
+        console.log('filtersMap.set (normal):', key, value);
       }
     }
 
-    const filters = Object.fromEntries(filtersMap);
+    const advFilters = Object.fromEntries(advFiltersMap);
 
-    console.log('filters', filters);
+    console.log('advFilters', advFilters);
     // console.log(Object.assign(searchParam));
 
     /// create query
-    let query = Tour.find(filters);
+    let query = Tour.find(advFilters);
 
-    /// apply soring
+    /// apply sorting
+    /// i.e: sort=-price,difficulty -> price desc, difficulty asc
     if (req.query.sort) {
-      const sort = String(req.query.sort).replace(/,/g, ' ');
+      const sort = String(req.query.sort).split(',').join(' ');
+      // const sort = String(req.query.sort).replace(/,/g, ' ');
       console.log('sort: ', sort);
       ///sort=name,duration
       query.sort(sort);
+    } else {
+      query.sort('-createdAt');
     }
 
     /// select fields
+    /// i.e:
+    ///   fields: name, duration -> select only name and duration fields.
+    ///   fields: -summary,-description -> select all but exclude summary and description fields.
     if (req.query.fields) {
-      const fields = String(req.query.fields).replace(/,/g, ' ');
+      const fields = String(req.query.fields).split(',').join(' ');
+      // const fields = String(req.query.fields).replace(/,/g, ' ');
       console.log('fields:', fields);
       query.select(fields);
     }
