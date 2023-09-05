@@ -114,11 +114,11 @@ const getAllTours = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         /// apply sorting
         /// i.e: sort=-price,difficulty -> price desc, difficulty asc
         if (req.query.sort) {
-            const sort = String(req.query.sort).split(',').join(' ');
+            const sortBy = String(req.query.sort).split(',').join(' ');
             // const sort = String(req.query.sort).replace(/,/g, ' ');
-            console.log('sort: ', sort);
+            console.log('sort: ', sortBy);
             ///sort=name,duration
-            query.sort(sort);
+            query.sort(sortBy);
         }
         else {
             query.sort('-createdAt');
@@ -128,10 +128,19 @@ const getAllTours = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         ///   fields: name, duration -> select only name and duration fields.
         ///   fields: -summary,-description -> select all but exclude summary and description fields.
         if (req.query.fields) {
-            const fields = String(req.query.fields).split(',').join(' ');
+            let fields = String(req.query.fields).split(',').join(' ');
             // const fields = String(req.query.fields).replace(/,/g, ' ');
+            /// exclude __v field if any of the fields has - (exclude)
+            if (String(req.query.fields)
+                .split(',')
+                .some((el) => el[0] === '-')) {
+                fields = fields + ' -__v';
+            }
             console.log('fields:', fields);
             query.select(fields);
+        }
+        else {
+            query.select('-__v');
         }
         /// execute query
         const tours = yield query; //or use: query.exec();
