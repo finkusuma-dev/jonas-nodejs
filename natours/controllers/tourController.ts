@@ -1,12 +1,6 @@
 import type * as E from 'express';
 import Tour from '../models/tourModel';
 import { Query } from 'mongoose';
-// const fs = require('fs');
-// const Tour = require('../models/tourModel');
-
-// const tours = JSON.parse(
-//   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`),
-//);
 
 // let tours = [];
 // tourModel.find({}).then((docs) => {
@@ -37,14 +31,24 @@ function errorJson(res: E.Response, status: number, msg: any) {
 //   next();
 // };
 
+/**
+ * Query params:
+ *    Advance filtering, i.e: duration=gte:5,lte:9&price=lte:1000&difficuly=easy.
+ *    Sorting, i.e: sort=name,price,-duration.
+ *    Select Fields, i,e: fields=name,price  or  fields=-summary,-description.
+ *    Pagination: i.e: page=2&limit=10.
+ *
+ * @param req
+ * @param res
+ */
 export const getAllTours = async (req: E.Request, res: E.Response) => {
   try {
     console.log('req.query', req.query);
 
-    /// Extract tour object properties
+    /// Extract tour object properties into array, i.e : [name, duration, ... ]
     const tourProps = Object.keys(Tour.schema.obj);
 
-    /// Create filterParams. Includes only param keys that are in tourProps
+    /// Create filterParams. Remove param keys that are not in tourProps, i.e: sort, fields, page, & limit
     const filterParams = { ...req.query };
 
     for (const [key] of Object.entries(req.query)) {
@@ -57,12 +61,16 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
     console.log('searchParams:', filterParams);
 
     /// Create advance filtering from filterParams
-    /// i.e: duration=gte:5,lte:9&price=lte:1000&difficuly=easy
+    /// i.e:
+    /// filterParams = duration=gte:5,lte:9&price=lte:1000&difficuly=easy
+    ///   becomes:
+    ///   Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
     ///
-    let advFiltersMap: Map<string, any> = new Map();
+    let advFiltersMap: Map<string, any> = new Map(); /// will create advFilters Object from this
 
     for (const [key, value] of Object.entries(filterParams)) {
       if (
+        /// key is one of the following
         [
           'duration',
           'maxGroupSize',
@@ -70,64 +78,73 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
           'ratingsQuantity',
           'price',
         ].includes(key) &&
+        /// and value has ":", i.e: gte:5
         String(value).indexOf(':') > -1
       ) {
-        /// advance filtering for number, i.e: duration=gte:5,lte:9
-        /// filtering object: i.e: { duration: { $gte: 5, $lte: 9 } }
-
+        /// Advance filtering for number,
+        /// i.e: duration=gte:5,lte:9
+        /// becomes Map { duration => { $gte: 5, $lte: 9 } }
+        ///
         let numberFiltersMap: Map<string, any> = new Map();
         String(value)
           .split(',')
           .forEach((filterItem) => {
-            const filterKey = filterItem.split(':')[0];
-            const filterValue = filterItem.split(':')[1];
-            if (filterKey === 'gte') {
-              numberFiltersMap.set('$gte', Number(filterValue));
-            } else if (filterKey === 'lte') {
-              numberFiltersMap.set('$lte', Number(filterValue));
-            } else if (filterKey === 'gt') {
-              numberFiltersMap.set('$gt', Number(filterValue));
-            } else if (filterKey === 'lt') {
-              numberFiltersMap.set('$lt', Number(filterValue));
-            } else if (filterKey === 'eq') {
-              numberFiltersMap.set('$eq', Number(filterValue));
-            }
+            let filterKey = filterItem.split(':')[0]; /// i.e: 'gte'
+            const filterValue = filterItem.split(':')[1]; /// i.e: 5
+
+            /// convert i.e: 'gte' => '$gte'
+            filterKey = key.replace(
+              /\b(gte,gt,lte,lt,eq)\b/g,
+              (match) => `$${match}`,
+            );
+
+            /// insert filter key & value to Map. i.e: Map { $gte => 5, $lte => 9 }
+            numberFiltersMap.set(filterKey, Number(filterValue));
           });
+
+        /// insert key and (Object of numberFilter) to advFilterMap
         advFiltersMap.set(key, Object.fromEntries(numberFiltersMap));
         console.log('filtersMap.set (number):', key);
       } else {
         /// normal filtering, i.e: ratingsAverage= 5
-        /// filtering object: i.e: { ratingsAverage: 5 }
-
+        /// filtering Map: i.e: { ratingsAverage => 5 }
+        ///
         advFiltersMap.set(key, value);
         console.log('filtersMap.set (normal):', key, value);
       }
     }
 
+    /// create advFilters Object from Map
+    /// Map { duration => { '$gte': 5, '$lte': 9 }, price => { '$lte': 1000 }, 'difficult' => 'easy' }
+    ///   becomes:
+    ///   Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
     const advFilters = Object.fromEntries(advFiltersMap);
 
     console.log('advFilters', advFilters);
     // console.log(Object.assign(searchParam));
 
-    /// create query
+    /// create query and set filters
     let query = Tour.find(advFilters);
 
     /// apply sorting
-    /// i.e: sort=-price,difficulty -> price desc, difficulty asc
+    /// i.e: sort=-price,difficulty => price desc, difficulty asc
+    ///
     if (req.query.sort) {
       const sortBy = String(req.query.sort).split(',').join(' ');
       // const sort = String(req.query.sort).replace(/,/g, ' ');
       console.log('sort: ', sortBy);
+
       ///sort=name,duration
       query.sort(sortBy);
     } else {
-      query.sort('-createdAt');
+      query.sort('-createdAt name');
     }
 
     /// select fields
     /// i.e:
     ///   fields: name, duration -> select only name and duration fields.
     ///   fields: -summary,-description -> select all but exclude summary and description fields.
+    ///
     if (req.query.fields) {
       let fields = String(req.query.fields).split(',').join(' ');
       // const fields = String(req.query.fields).replace(/,/g, ' ');
@@ -146,14 +163,30 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
       query.select('-__v');
     }
 
+    /// testing skip
+    // if (req.query.skip) {
+    //   query = query.skip(Number(req.query.skip));
+    // }
+
+    /// pagination
+    /// limit=5 & page=2 => limit=5 & skip=5 for records no: 6 - 10
+
+    const page = Number(req.query.page || 1);
+    const limit = Number(req.query.limit) || 5;
+    const skipBy = (page - 1) * limit;
+    query = query.limit(limit);
+    query = query.skip(skipBy);
+    console.log(`limit: ${limit}, skip: ${skipBy}`);
+
+    if (req.query.page) {
+      const documentCount = await Tour.countDocuments();
+      if (skipBy >= documentCount) throw new Error('Page is not found');
+    }
+
     /// execute query
     const tours = await query; //or use: query.exec();
-    // const Tour = await query.exec;
 
-    // let tours = await Tour.find(searchParams);
-    // tours = tours.sort('name');
-    // tours = await tours.exec();
-
+    /// response
     res.json({
       status: 'success',
       results: tours.length,
@@ -162,7 +195,7 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
       },
     });
   } catch (err: any) {
-    errorJson(res, 400, err.message);
+    errorJson(res, 404, err.message);
   }
 };
 
