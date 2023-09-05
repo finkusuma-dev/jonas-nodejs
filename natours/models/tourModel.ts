@@ -1,11 +1,11 @@
 import { Schema, Model, model } from 'mongoose';
 
-interface ITour {
+export interface ITour {
   name: string;
   // rating: number;
   price: number;
   duration: number;
-  maxGrupSize: number;
+  maxGroupSize: number;
   difficulty: string;
   ratingsAverage: number;
   ratingsQuantity: number;
@@ -13,9 +13,9 @@ interface ITour {
   summary: string | undefined;
   description: string;
   imageCover: string;
-  images: Array<string> | undefined;
+  images: string[] | undefined;
   createdAt: Date;
-  startDates: Array<Date> | undefined;
+  startDates: Date[] | undefined;
 }
 
 type TourModelType = Model<ITour>;
@@ -35,7 +35,7 @@ const tourSchema = new Schema<ITour>({
     type: Number,
     required: [true, 'a tour must have a duration'],
   },
-  maxGrupSize: {
+  maxGroupSize: {
     type: Number,
     required: [true, 'a tour must have a maxGrupSize'],
   },

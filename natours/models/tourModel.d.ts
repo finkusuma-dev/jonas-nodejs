@@ -1,9 +1,9 @@
 import { Model } from 'mongoose';
-interface ITour {
+export interface ITour {
     name: string;
     price: number;
     duration: number;
-    maxGrupSize: number;
+    maxGroupSize: number;
     difficulty: string;
     ratingsAverage: number;
     ratingsQuantity: number;
@@ -11,9 +11,9 @@ interface ITour {
     summary: string | undefined;
     description: string;
     imageCover: string;
-    images: Array<string> | undefined;
+    images: string[] | undefined;
     createdAt: Date;
-    startDates: Array<Date> | undefined;
+    startDates: Date[] | undefined;
 }
 type TourModelType = Model<ITour>;
 declare const Tour: TourModelType;
