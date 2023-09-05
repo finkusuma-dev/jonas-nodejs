@@ -46,7 +46,74 @@ function errorJson(res, status, msg) {
 // };
 const getAllTours = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const tours = yield tourModel_1.default.find();
+        console.log('req.query', req.query);
+        const searchParams = Object.assign({}, req.query);
+        /// extract tour object properties
+        const tourProps = Object.keys(tourModel_1.default.schema.obj);
+        for (const [key, value] of Object.entries(req.query)) {
+            // console.log(`key: ${key}, value: ${value}`);
+            if (!tourProps.includes(key)) {
+                /// delete prop from object
+                delete searchParams[key];
+            }
+        }
+        console.log('searchParams:', searchParams);
+        let filtersMap = new Map();
+        for (const [key, value] of Object.entries(searchParams)) {
+            if (['duration', 'maxGroupSize'].includes(key)) {
+                /// advance filtering i.e: duration=gte:5,lte:9
+                /// {duration : {$gte: 5}}
+                let numberFiltersMap = new Map();
+                String(value)
+                    .split(',')
+                    .forEach((filterItem) => {
+                    const filterKey = filterItem.split(':')[0];
+                    const filterValue = filterItem.split(':')[1];
+                    if (filterKey === 'gte') {
+                        numberFiltersMap.set('$gte', Number(filterValue));
+                    }
+                    else if (filterKey === 'lte') {
+                        numberFiltersMap.set('$lte', Number(filterValue));
+                    }
+                    else if (filterKey === 'gt') {
+                        numberFiltersMap.set('$gt', Number(filterValue));
+                    }
+                    else if (filterKey === 'lt') {
+                        numberFiltersMap.set('$lt', Number(filterValue));
+                    }
+                });
+                filtersMap.set(key, Object.fromEntries(numberFiltersMap));
+                console.log('filtersMap.set (number):', key);
+            }
+            else {
+                filtersMap.set(key, value);
+                console.log('filtersMap.set (string):', key, value);
+            }
+        }
+        const filters = Object.fromEntries(filtersMap);
+        console.log('filters', filters);
+        // console.log(Object.assign(searchParam));
+        /// create query
+        let query = tourModel_1.default.find(filters);
+        /// apply soring
+        if (req.query.sort) {
+            const sort = String(req.query.sort).replace(/,/g, ' ');
+            console.log('sort: ', sort);
+            ///sort=name,duration
+            query.sort(sort);
+        }
+        /// select fields
+        if (req.query.fields) {
+            const fields = String(req.query.fields).replace(/,/g, ' ');
+            console.log('fields:', fields);
+            query.select(fields);
+        }
+        /// execute query
+        const tours = yield query; //or use: query.exec();
+        // const Tour = await query.exec;
+        // let tours = await Tour.find(searchParams);
+        // tours = tours.sort('name');
+        // tours = await tours.exec();
         res.json({
             status: 'success',
             results: tours.length,
