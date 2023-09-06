@@ -1,8 +1,8 @@
 import type * as E from 'express';
 import type QueryString from 'qs';
 import { QueryType } from '../types/mongooseTypes';
-import Tour, { ITour, TourQueryType } from '../models/tourModel';
-import { Query, Document, Types as M } from 'mongoose';
+import Tour, { ITour } from '../models/tourModel';
+//import { Query, Document, Types as M } from 'mongoose';
 
 // let tours = [];
 // tourModel.find({}).then((docs) => {
@@ -74,10 +74,10 @@ function sortQuery<T>(
 ///   fields: name, duration -> select only name and duration fields.
 ///   fields: -summary,-description -> select all but exclude summary and description fields.
 ///
-const selectFieldsQuery = (
+function selectFieldsQuery<T>(
   queryStr: QueryString.ParsedQs,
-  query: TourQueryType, // Query<TourResultDocType,TourDocType,{},ITour>,
-): TourQueryType => {
+  query: QueryType<T>, // Query<TourResultDocType,TourDocType,{},ITour>,
+): QueryType<T> {
   if (queryStr.fields) {
     let fields = String(queryStr.fields).split(',').join(' ');
     // const fields = String(queryStr.fields).replace(/,/g, ' ');
@@ -91,18 +91,18 @@ const selectFieldsQuery = (
       fields = fields + ' -__v';
     }
     console.log('fields:', fields);
-    query = query.select<ITour>(fields);
+    query = query.select<T>(fields) as QueryType<T>;
   } else {
-    query = query.select<ITour>('-__v');
+    query = query.select<T>('-__v') as QueryType<T>;
   }
 
   return query;
-};
+}
 
-const paginateQuery = async (
+async function paginateQuery<T>(
   queryStr: QueryString.ParsedQs,
-  query: TourQueryType,
-): Promise<TourQueryType> => {
+  query: QueryType<T>,
+): Promise<QueryType<T>> {
   const page = Number(queryStr.page || 1);
   const limit = Number(queryStr.limit) || 5;
   const skipBy = (page - 1) * limit;
@@ -116,7 +116,7 @@ const paginateQuery = async (
   }
 
   return query;
-};
+}
 
 /**
  * Query params:
@@ -218,7 +218,10 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
 
     query = selectFieldsQuery(req.query, query);
 
-    query = (await paginateQuery(req.query, query)) as unknown as TourQueryType;
+    query = (await paginateQuery(
+      req.query,
+      query,
+    )) as unknown as QueryType<ITour>;
 
     /// execute query
     const tours = await query; //or use: query.exec() !Notworking;

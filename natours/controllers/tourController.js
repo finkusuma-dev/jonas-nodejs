@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteTour = exports.updateTour = exports.createNewTour = exports.getTour = exports.getAllTours = exports.aliasTop5Cheap = void 0;
 const tourModel_1 = __importDefault(require("../models/tourModel"));
+//import { Query, Document, Types as M } from 'mongoose';
 // let tours = [];
 // tourModel.find({}).then((docs) => {
 //   tours = [...docs];
@@ -66,7 +67,7 @@ function sortQuery(queryStr, query) {
 ///   fields: name, duration -> select only name and duration fields.
 ///   fields: -summary,-description -> select all but exclude summary and description fields.
 ///
-const selectFieldsQuery = (queryStr, query) => {
+function selectFieldsQuery(queryStr, query) {
     if (queryStr.fields) {
         let fields = String(queryStr.fields).split(',').join(' ');
         // const fields = String(queryStr.fields).replace(/,/g, ' ');
@@ -83,21 +84,23 @@ const selectFieldsQuery = (queryStr, query) => {
         query = query.select('-__v');
     }
     return query;
-};
-const paginateQuery = (queryStr, query) => __awaiter(void 0, void 0, void 0, function* () {
-    const page = Number(queryStr.page || 1);
-    const limit = Number(queryStr.limit) || 5;
-    const skipBy = (page - 1) * limit;
-    query = query.limit(limit);
-    query = query.skip(skipBy);
-    console.log(`limit: ${limit}, skip: ${skipBy}`);
-    if (queryStr.page) {
-        const documentCount = yield tourModel_1.default.countDocuments();
-        if (skipBy >= documentCount)
-            throw new Error('Page is not found');
-    }
-    return query;
-});
+}
+function paginateQuery(queryStr, query) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const page = Number(queryStr.page || 1);
+        const limit = Number(queryStr.limit) || 5;
+        const skipBy = (page - 1) * limit;
+        query = query.limit(limit);
+        query = query.skip(skipBy);
+        console.log(`limit: ${limit}, skip: ${skipBy}`);
+        if (queryStr.page) {
+            const documentCount = yield tourModel_1.default.countDocuments();
+            if (skipBy >= documentCount)
+                throw new Error('Page is not found');
+        }
+        return query;
+    });
+}
 /**
  * Query params:
  *    Advance filtering, i.e: duration=gte:5,lte:9&price=lte:1000&difficuly=easy.
