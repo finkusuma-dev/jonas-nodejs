@@ -48,9 +48,9 @@ exports.aliasTop5Cheap = aliasTop5Cheap;
 /// apply sorting
 /// i.e: sort=-price,difficulty => price desc, difficulty asc
 ///
-const sortQuery = (req, query) => {
-    if (req.query.sort) {
-        const sortBy = String(req.query.sort).split(',').join(' ');
+function sortQuery(queryStr, query) {
+    if (queryStr.sort) {
+        const sortBy = String(queryStr.sort).split(',').join(' ');
         // const sort = String(req.query.sort).replace(/,/g, ' ');
         console.log('sort: ', sortBy);
         ///sort=name,duration
@@ -60,18 +60,18 @@ const sortQuery = (req, query) => {
         query = query.sort('-createdAt name');
     }
     return query;
-};
+}
 /// select fields
 /// i.e:
 ///   fields: name, duration -> select only name and duration fields.
 ///   fields: -summary,-description -> select all but exclude summary and description fields.
 ///
-const selectFieldsQuery = (req, query) => {
-    if (req.query.fields) {
-        let fields = String(req.query.fields).split(',').join(' ');
-        // const fields = String(req.query.fields).replace(/,/g, ' ');
+const selectFieldsQuery = (queryStr, query) => {
+    if (queryStr.fields) {
+        let fields = String(queryStr.fields).split(',').join(' ');
+        // const fields = String(queryStr.fields).replace(/,/g, ' ');
         /// exclude __v field if any of the fields has - (exclude)
-        if (String(req.query.fields)
+        if (String(queryStr.fields)
             .split(',')
             .some((el) => el[0] === '-')) {
             fields = fields + ' -__v';
@@ -84,14 +84,14 @@ const selectFieldsQuery = (req, query) => {
     }
     return query;
 };
-const paginateQuery = (req, query) => __awaiter(void 0, void 0, void 0, function* () {
-    const page = Number(req.query.page || 1);
-    const limit = Number(req.query.limit) || 5;
+const paginateQuery = (queryStr, query) => __awaiter(void 0, void 0, void 0, function* () {
+    const page = Number(queryStr.page || 1);
+    const limit = Number(queryStr.limit) || 5;
     const skipBy = (page - 1) * limit;
     query = query.limit(limit);
     query = query.skip(skipBy);
     console.log(`limit: ${limit}, skip: ${skipBy}`);
-    if (req.query.page) {
+    if (queryStr.page) {
         const documentCount = yield tourModel_1.default.countDocuments();
         if (skipBy >= documentCount)
             throw new Error('Page is not found');
@@ -113,16 +113,16 @@ const getAllTours = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         console.log('req.query', req.query);
         /// Extract tour object properties into array, i.e : [name, duration, ... ]
         const tourProps = Object.keys(tourModel_1.default.schema.obj);
-        /// Create filterParams. Remove param keys that are not in tourProps, i.e: sort, fields, page, & limit
-        const filterParams = Object.assign({}, req.query);
+        /// Remove keys from query string that are not in tourProps, i.e: sort, fields, page, & limit
+        const queryStr = Object.assign({}, req.query);
         for (const [key] of Object.entries(req.query)) {
             // console.log(`key: ${key}, value: ${value}`);
             if (!tourProps.includes(key)) {
                 /// delete prop from object
-                delete filterParams[key];
+                delete queryStr[key];
             }
         }
-        console.log('searchParams:', filterParams);
+        console.log('searchParams:', queryStr);
         /// Create advance filtering from filterParams
         /// i.e:
         /// filterParams = duration=gte:5,lte:9&price=lte:1000&difficuly=easy
@@ -130,7 +130,7 @@ const getAllTours = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         ///   Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
         ///
         let advFiltersMap = new Map(); /// will create advFilters Object from this
-        for (const [key, value] of Object.entries(filterParams)) {
+        for (const [key, value] of Object.entries(queryStr)) {
             if (
             /// key is one of the following
             [
@@ -179,9 +179,9 @@ const getAllTours = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         // console.log(Object.assign(searchParam));
         /// create query and set filters
         let query = tourModel_1.default.find(advFilters);
-        query = sortQuery(req, query);
-        query = selectFieldsQuery(req, query);
-        query = (yield paginateQuery(req, query));
+        query = sortQuery(req.query, query);
+        query = selectFieldsQuery(req.query, query);
+        query = (yield paginateQuery(req.query, query));
         /// execute query
         const tours = yield query; //or use: query.exec() !Notworking;
         /// response

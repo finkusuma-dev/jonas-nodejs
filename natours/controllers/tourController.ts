@@ -1,6 +1,7 @@
 import type * as E from 'express';
+import type QueryString from 'qs';
 import Tour, { ITour, TourQueryType } from '../models/tourModel';
-import { Query, Document, Types as MT } from 'mongoose';
+import { Query, Document, Types as M } from 'mongoose';
 
 // let tours = [];
 // tourModel.find({}).then((docs) => {
@@ -50,9 +51,34 @@ export const aliasTop5Cheap = (
 /// apply sorting
 /// i.e: sort=-price,difficulty => price desc, difficulty asc
 ///
-const sortQuery = (req: E.Request, query: TourQueryType): TourQueryType => {
-  if (req.query.sort) {
-    const sortBy = String(req.query.sort).split(',').join(' ');
+function sortQuery<T>(
+  queryStr: QueryString.ParsedQs,
+  query: Query<
+    (Document<unknown, {}, T> &
+      T & {
+        _id: M.ObjectId;
+      })[],
+    Document<unknown, {}, T> &
+      T & {
+        _id: M.ObjectId;
+      },
+    {},
+    ITour
+  >,
+): Query<
+  (Document<unknown, {}, T> &
+    T & {
+      _id: M.ObjectId;
+    })[],
+  Document<unknown, {}, T> &
+    T & {
+      _id: M.ObjectId;
+    },
+  {},
+  ITour
+> {
+  if (queryStr.sort) {
+    const sortBy = String(queryStr.sort).split(',').join(' ');
     // const sort = String(req.query.sort).replace(/,/g, ' ');
     console.log('sort: ', sortBy);
 
@@ -62,7 +88,7 @@ const sortQuery = (req: E.Request, query: TourQueryType): TourQueryType => {
     query = query.sort('-createdAt name');
   }
   return query;
-};
+}
 
 /// select fields
 /// i.e:
@@ -70,16 +96,16 @@ const sortQuery = (req: E.Request, query: TourQueryType): TourQueryType => {
 ///   fields: -summary,-description -> select all but exclude summary and description fields.
 ///
 const selectFieldsQuery = (
-  req: E.Request,
+  queryStr: QueryString.ParsedQs,
   query: TourQueryType, // Query<TourResultDocType,TourDocType,{},ITour>,
 ): TourQueryType => {
-  if (req.query.fields) {
-    let fields = String(req.query.fields).split(',').join(' ');
-    // const fields = String(req.query.fields).replace(/,/g, ' ');
+  if (queryStr.fields) {
+    let fields = String(queryStr.fields).split(',').join(' ');
+    // const fields = String(queryStr.fields).replace(/,/g, ' ');
 
     /// exclude __v field if any of the fields has - (exclude)
     if (
-      String(req.query.fields)
+      String(queryStr.fields)
         .split(',')
         .some((el) => el[0] === '-')
     ) {
@@ -95,17 +121,17 @@ const selectFieldsQuery = (
 };
 
 const paginateQuery = async (
-  req: E.Request,
+  queryStr: QueryString.ParsedQs,
   query: TourQueryType,
 ): Promise<TourQueryType> => {
-  const page = Number(req.query.page || 1);
-  const limit = Number(req.query.limit) || 5;
+  const page = Number(queryStr.page || 1);
+  const limit = Number(queryStr.limit) || 5;
   const skipBy = (page - 1) * limit;
   query = query.limit(limit);
   query = query.skip(skipBy);
   console.log(`limit: ${limit}, skip: ${skipBy}`);
 
-  if (req.query.page) {
+  if (queryStr.page) {
     const documentCount = await Tour.countDocuments();
     if (skipBy >= documentCount) throw new Error('Page is not found');
   }
@@ -130,17 +156,17 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
     /// Extract tour object properties into array, i.e : [name, duration, ... ]
     const tourProps = Object.keys(Tour.schema.obj);
 
-    /// Create filterParams. Remove param keys that are not in tourProps, i.e: sort, fields, page, & limit
-    const filterParams = { ...req.query };
+    /// Remove keys from query string that are not in tourProps, i.e: sort, fields, page, & limit
+    const queryStr = { ...req.query };
 
     for (const [key] of Object.entries(req.query)) {
       // console.log(`key: ${key}, value: ${value}`);
       if (!tourProps.includes(key)) {
         /// delete prop from object
-        delete filterParams[key];
+        delete queryStr[key];
       }
     }
-    console.log('searchParams:', filterParams);
+    console.log('searchParams:', queryStr);
 
     /// Create advance filtering from filterParams
     /// i.e:
@@ -150,7 +176,7 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
     ///
     let advFiltersMap: Map<string, any> = new Map(); /// will create advFilters Object from this
 
-    for (const [key, value] of Object.entries(filterParams)) {
+    for (const [key, value] of Object.entries(queryStr)) {
       if (
         /// key is one of the following
         [
@@ -207,13 +233,13 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
     // console.log(Object.assign(searchParam));
 
     /// create query and set filters
-    let query: TourQueryType = Tour.find(advFilters);
+    let query = Tour.find(advFilters);
 
-    query = sortQuery(req, query);
+    query = sortQuery(req.query, query);
 
-    query = selectFieldsQuery(req, query);
+    query = selectFieldsQuery(req.query, query);
 
-    query = (await paginateQuery(req, query)) as unknown as TourQueryType;
+    query = (await paginateQuery(req.query, query)) as unknown as TourQueryType;
 
     /// execute query
     const tours = await query; //or use: query.exec() !Notworking;
