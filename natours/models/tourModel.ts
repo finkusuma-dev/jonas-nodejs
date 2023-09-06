@@ -20,18 +20,18 @@ export interface ITour {
 
 type TourModelType = Model<ITour>;
 
-export type TourDocType = Document<unknown, {}, ITour>;
-export type TourResultDocType = TourDocType &
-  ITour & {
-    _id: Types.ObjectId;
-  };
+// export type TourDocType = Document<unknown, {}, ITour>;
+// export type TourResultDocType = TourDocType &
+//   ITour & {
+//     _id: Types.ObjectId;
+//   };
 
-export type TourQueryType = Query<
-  TourResultDocType[],
-  TourResultDocType,
-  {},
-  ITour
->;
+// export type TourQueryType = Query<
+//   TourResultDocType[],
+//   TourResultDocType,
+//   {},
+//   ITour
+// >;
 
 // export type QueryTour = Query<
 //   (DocumentTour & ITour & { _id: Types.ObjectId })[],

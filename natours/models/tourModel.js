@@ -1,6 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
+// export type TourDocType = Document<unknown, {}, ITour>;
+// export type TourResultDocType = TourDocType &
+//   ITour & {
+//     _id: Types.ObjectId;
+//   };
+// export type TourQueryType = Query<
+//   TourResultDocType[],
+//   TourResultDocType,
+//   {},
+//   ITour
+// >;
 // export type QueryTour = Query<
 //   (DocumentTour & ITour & { _id: Types.ObjectId })[],
 //   DocumentTour & ITour & { _id: Types.ObjectId }

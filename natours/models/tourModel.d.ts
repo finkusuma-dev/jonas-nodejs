@@ -1,4 +1,4 @@
-import { Model, Document, Types, Query } from 'mongoose';
+import { Model, Document, Types } from 'mongoose';
 export interface ITour {
     name: string;
     price: number;
@@ -15,11 +15,6 @@ export interface ITour {
     createdAt: Date;
     startDates: Types.Array<Date> | undefined;
 }
-export type TourDocType = Document<unknown, {}, ITour>;
-export type TourResultDocType = TourDocType & ITour & {
-    _id: Types.ObjectId;
-};
-export type TourQueryType = Query<TourResultDocType[], TourResultDocType, {}, ITour>;
 declare const Tour: Model<ITour, {}, {}, {}, Document<unknown, {}, ITour> & ITour & {
     _id: Types.ObjectId;
 }, any>;
