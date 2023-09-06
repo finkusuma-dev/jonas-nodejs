@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteTour = exports.updateTour = exports.createNewTour = exports.getTour = exports.getAllTours = void 0;
+exports.deleteTour = exports.updateTour = exports.createNewTour = exports.getTour = exports.getAllTours = exports.aliasTop5Cheap = void 0;
 const tourModel_1 = __importDefault(require("../models/tourModel"));
 // let tours = [];
 // tourModel.find({}).then((docs) => {
@@ -39,6 +39,12 @@ function errorJson(res, status, msg) {
 //     return errorJson(res, 400, 'Invalid Request. Missing name or price');
 //   next();
 // };
+const aliasTop5Cheap = (req, res, next) => {
+    console.log('alias top5CheapTours');
+    req.query = Object.assign(Object.assign({}, req.query), { sort: 'price', fields: 'name,difficulty,price,summary', limit: '5' });
+    next();
+};
+exports.aliasTop5Cheap = aliasTop5Cheap;
 /**
  * Query params:
  *    Advance filtering, i.e: duration=gte:5,lte:9&price=lte:1000&difficuly=easy.

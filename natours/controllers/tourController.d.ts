@@ -1,4 +1,5 @@
 import type * as E from 'express';
+export declare const aliasTop5Cheap: (req: E.Request, res: E.Response, next: E.NextFunction) => void;
 /**
  * Query params:
  *    Advance filtering, i.e: duration=gte:5,lte:9&price=lte:1000&difficuly=easy.

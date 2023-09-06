@@ -31,6 +31,22 @@ function errorJson(res: E.Response, status: number, msg: any) {
 //   next();
 // };
 
+export const aliasTop5Cheap = (
+  req: E.Request,
+  res: E.Response,
+  next: E.NextFunction,
+) => {
+  console.log('alias top5CheapTours');
+  req.query = {
+    ...req.query,
+    sort: 'price',
+    fields: 'name,difficulty,price,summary',
+    limit: '5',
+  };
+
+  next();
+};
+
 /**
  * Query params:
  *    Advance filtering, i.e: duration=gte:5,lte:9&price=lte:1000&difficuly=easy.
