@@ -1,6 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
+// export type QueryTour = Query<
+//   (DocumentTour & ITour & { _id: Types.ObjectId })[],
+//   DocumentTour & ITour & { _id: Types.ObjectId }
+//   // {},
+//   // ITour
+//   // 'find'
+// >;
 const tourSchema = new mongoose_1.Schema({
     name: {
         type: String,
@@ -65,23 +72,7 @@ const tourSchema = new mongoose_1.Schema({
 //   // images: String,
 //   // startDates: String,
 // });
+// const Tour = model<ITour, TourModelType>('Tour', tourSchema);
 const Tour = (0, mongoose_1.model)('Tour', tourSchema);
 // module.exports = Tour;
 exports.default = Tour;
-// Tour.findOne({ name: 'The Forest Adventurer' }).then((doc) => {
-//   if (doc) {
-//     console.log('Found the tour', doc);
-//   } else {
-//     const tour = new Tour({
-//       name: 'The Forest Adventurer',
-//       price: 200,
-//     });
-//     tour
-//       .save()
-//       .then((newDoc) => console.log('A new tour created:', newDoc))
-//       .catch((err) => console.log('Save a new tour failed:', err));
-//   }
-// });
-// const connected /= await mongoose.connect(process.env.MONGO_DB);
-// connect();
-// const TourSchema = new mongoose.Schema({});

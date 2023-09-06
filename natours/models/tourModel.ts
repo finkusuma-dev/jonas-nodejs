@@ -1,4 +1,4 @@
-import { Schema, Model, model } from 'mongoose';
+import { Schema, Model, model, Document, Types, Query } from 'mongoose';
 
 export interface ITour {
   name: string;
@@ -13,14 +13,35 @@ export interface ITour {
   summary: string | undefined;
   description: string;
   imageCover: string;
-  images: string[] | undefined;
+  images: Types.Array<string> | undefined;
   createdAt: Date;
-  startDates: Date[] | undefined;
+  startDates: Types.Array<Date> | undefined;
 }
 
 type TourModelType = Model<ITour>;
 
-const tourSchema = new Schema<ITour>({
+export type TourDocType = Document<unknown, {}, ITour>;
+export type TourResultDocType = TourDocType &
+  ITour & {
+    _id: Types.ObjectId;
+  };
+
+export type TourQueryType = Query<
+  TourResultDocType[],
+  TourResultDocType,
+  {},
+  ITour
+>;
+
+// export type QueryTour = Query<
+//   (DocumentTour & ITour & { _id: Types.ObjectId })[],
+//   DocumentTour & ITour & { _id: Types.ObjectId }
+//   // {},
+//   // ITour
+//   // 'find'
+// >;
+
+const tourSchema = new Schema<ITour, Model<ITour>>({
   name: {
     type: String,
     required: [true, 'a tour must have a name'],
@@ -85,27 +106,8 @@ const tourSchema = new Schema<ITour>({
 //   // startDates: String,
 // });
 
-const Tour = model<ITour, TourModelType>('Tour', tourSchema);
+// const Tour = model<ITour, TourModelType>('Tour', tourSchema);
+const Tour = model<ITour>('Tour', tourSchema);
 
 // module.exports = Tour;
 export default Tour;
-
-// Tour.findOne({ name: 'The Forest Adventurer' }).then((doc) => {
-//   if (doc) {
-//     console.log('Found the tour', doc);
-//   } else {
-//     const tour = new Tour({
-//       name: 'The Forest Adventurer',
-//       price: 200,
-//     });
-//     tour
-//       .save()
-//       .then((newDoc) => console.log('A new tour created:', newDoc))
-//       .catch((err) => console.log('Save a new tour failed:', err));
-//   }
-// });
-
-// const connected /= await mongoose.connect(process.env.MONGO_DB);
-
-// connect();
-// const TourSchema = new mongoose.Schema({});

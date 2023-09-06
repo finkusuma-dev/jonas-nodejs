@@ -45,6 +45,59 @@ const aliasTop5Cheap = (req, res, next) => {
     next();
 };
 exports.aliasTop5Cheap = aliasTop5Cheap;
+/// apply sorting
+/// i.e: sort=-price,difficulty => price desc, difficulty asc
+///
+const sortQuery = (req, query) => {
+    if (req.query.sort) {
+        const sortBy = String(req.query.sort).split(',').join(' ');
+        // const sort = String(req.query.sort).replace(/,/g, ' ');
+        console.log('sort: ', sortBy);
+        ///sort=name,duration
+        query = query.sort(sortBy);
+    }
+    else {
+        query = query.sort('-createdAt name');
+    }
+    return query;
+};
+/// select fields
+/// i.e:
+///   fields: name, duration -> select only name and duration fields.
+///   fields: -summary,-description -> select all but exclude summary and description fields.
+///
+const selectFieldsQuery = (req, query) => {
+    if (req.query.fields) {
+        let fields = String(req.query.fields).split(',').join(' ');
+        // const fields = String(req.query.fields).replace(/,/g, ' ');
+        /// exclude __v field if any of the fields has - (exclude)
+        if (String(req.query.fields)
+            .split(',')
+            .some((el) => el[0] === '-')) {
+            fields = fields + ' -__v';
+        }
+        console.log('fields:', fields);
+        query = query.select(fields);
+    }
+    else {
+        query = query.select('-__v');
+    }
+    return query;
+};
+const paginateQuery = (req, query) => __awaiter(void 0, void 0, void 0, function* () {
+    const page = Number(req.query.page || 1);
+    const limit = Number(req.query.limit) || 5;
+    const skipBy = (page - 1) * limit;
+    query = query.limit(limit);
+    query = query.skip(skipBy);
+    console.log(`limit: ${limit}, skip: ${skipBy}`);
+    if (req.query.page) {
+        const documentCount = yield tourModel_1.default.countDocuments();
+        if (skipBy >= documentCount)
+            throw new Error('Page is not found');
+    }
+    return query;
+});
 /**
  * Query params:
  *    Advance filtering, i.e: duration=gte:5,lte:9&price=lte:1000&difficuly=easy.
@@ -100,7 +153,8 @@ const getAllTours = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                     let filterKey = filterItem.split(':')[0]; /// i.e: 'gte'
                     const filterValue = filterItem.split(':')[1]; /// i.e: 5
                     /// convert i.e: 'gte' => '$gte'
-                    filterKey = key.replace(/\b(gte,gt,lte,lt,eq)\b/g, (match) => `$${match}`);
+                    filterKey = filterKey.replace(/\b(gte|gt|lte|lt|eq)\b/g, (match) => `$${match}`);
+                    //console.log(`filterKey ${filterKey} => ${filterKey2}`);
                     /// insert filter key & value to Map. i.e: Map { $gte => 5, $lte => 9 }
                     numberFiltersMap.set(filterKey, Number(filterValue));
                 });
@@ -125,58 +179,11 @@ const getAllTours = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         // console.log(Object.assign(searchParam));
         /// create query and set filters
         let query = tourModel_1.default.find(advFilters);
-        /// apply sorting
-        /// i.e: sort=-price,difficulty => price desc, difficulty asc
-        ///
-        if (req.query.sort) {
-            const sortBy = String(req.query.sort).split(',').join(' ');
-            // const sort = String(req.query.sort).replace(/,/g, ' ');
-            console.log('sort: ', sortBy);
-            ///sort=name,duration
-            query.sort(sortBy);
-        }
-        else {
-            query.sort('-createdAt name');
-        }
-        /// select fields
-        /// i.e:
-        ///   fields: name, duration -> select only name and duration fields.
-        ///   fields: -summary,-description -> select all but exclude summary and description fields.
-        ///
-        if (req.query.fields) {
-            let fields = String(req.query.fields).split(',').join(' ');
-            // const fields = String(req.query.fields).replace(/,/g, ' ');
-            /// exclude __v field if any of the fields has - (exclude)
-            if (String(req.query.fields)
-                .split(',')
-                .some((el) => el[0] === '-')) {
-                fields = fields + ' -__v';
-            }
-            console.log('fields:', fields);
-            query.select(fields);
-        }
-        else {
-            query.select('-__v');
-        }
-        /// testing skip
-        // if (req.query.skip) {
-        //   query = query.skip(Number(req.query.skip));
-        // }
-        /// pagination
-        /// limit=5 & page=2 => limit=5 & skip=5 for records no: 6 - 10
-        const page = Number(req.query.page || 1);
-        const limit = Number(req.query.limit) || 5;
-        const skipBy = (page - 1) * limit;
-        query = query.limit(limit);
-        query = query.skip(skipBy);
-        console.log(`limit: ${limit}, skip: ${skipBy}`);
-        if (req.query.page) {
-            const documentCount = yield tourModel_1.default.countDocuments();
-            if (skipBy >= documentCount)
-                throw new Error('Page is not found');
-        }
+        query = sortQuery(req, query);
+        query = selectFieldsQuery(req, query);
+        query = (yield paginateQuery(req, query));
         /// execute query
-        const tours = yield query; //or use: query.exec();
+        const tours = yield query; //or use: query.exec() !Notworking;
         /// response
         res.json({
             status: 'success',

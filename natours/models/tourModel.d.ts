@@ -1,4 +1,4 @@
-import { Model } from 'mongoose';
+import { Model, Document, Types, Query } from 'mongoose';
 export interface ITour {
     name: string;
     price: number;
@@ -11,10 +11,16 @@ export interface ITour {
     summary: string | undefined;
     description: string;
     imageCover: string;
-    images: string[] | undefined;
+    images: Types.Array<string> | undefined;
     createdAt: Date;
-    startDates: Date[] | undefined;
+    startDates: Types.Array<Date> | undefined;
 }
-type TourModelType = Model<ITour>;
-declare const Tour: TourModelType;
+export type TourDocType = Document<unknown, {}, ITour>;
+export type TourResultDocType = TourDocType & ITour & {
+    _id: Types.ObjectId;
+};
+export type TourQueryType = Query<TourResultDocType[], TourResultDocType, {}, ITour>;
+declare const Tour: Model<ITour, {}, {}, {}, Document<unknown, {}, ITour> & ITour & {
+    _id: Types.ObjectId;
+}, any>;
 export default Tour;

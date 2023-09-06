@@ -9,6 +9,9 @@ get http://127.0.0.1:3000/api/v1/tours?fields=-summary,-description&page=1
 get http://127.0.0.1:3000/api/v1/tours?fields=name&page=2
 
 ###
+get http://127.0.0.1:3000/api/v1/tours?duration=gte:7,lte:9&fields=name,duration&sort=name
+
+###
 get http://127.0.0.1:3000/api/v1/tours?maxGroupSize=gt:14,lt:21&duration=gte:7,lte:9&sort=maxGroupSize&fields=-summary,-description
 
 ###

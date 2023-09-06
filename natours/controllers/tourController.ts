@@ -1,6 +1,6 @@
 import type * as E from 'express';
-import Tour from '../models/tourModel';
-import { Query } from 'mongoose';
+import Tour, { ITour, TourQueryType } from '../models/tourModel';
+import { Query, Document, Types as MT } from 'mongoose';
 
 // let tours = [];
 // tourModel.find({}).then((docs) => {
@@ -45,6 +45,72 @@ export const aliasTop5Cheap = (
   };
 
   next();
+};
+
+/// apply sorting
+/// i.e: sort=-price,difficulty => price desc, difficulty asc
+///
+const sortQuery = (req: E.Request, query: TourQueryType): TourQueryType => {
+  if (req.query.sort) {
+    const sortBy = String(req.query.sort).split(',').join(' ');
+    // const sort = String(req.query.sort).replace(/,/g, ' ');
+    console.log('sort: ', sortBy);
+
+    ///sort=name,duration
+    query = query.sort(sortBy);
+  } else {
+    query = query.sort('-createdAt name');
+  }
+  return query;
+};
+
+/// select fields
+/// i.e:
+///   fields: name, duration -> select only name and duration fields.
+///   fields: -summary,-description -> select all but exclude summary and description fields.
+///
+const selectFieldsQuery = (
+  req: E.Request,
+  query: TourQueryType, // Query<TourResultDocType,TourDocType,{},ITour>,
+): TourQueryType => {
+  if (req.query.fields) {
+    let fields = String(req.query.fields).split(',').join(' ');
+    // const fields = String(req.query.fields).replace(/,/g, ' ');
+
+    /// exclude __v field if any of the fields has - (exclude)
+    if (
+      String(req.query.fields)
+        .split(',')
+        .some((el) => el[0] === '-')
+    ) {
+      fields = fields + ' -__v';
+    }
+    console.log('fields:', fields);
+    query = query.select<ITour>(fields);
+  } else {
+    query = query.select<ITour>('-__v');
+  }
+
+  return query;
+};
+
+const paginateQuery = async (
+  req: E.Request,
+  query: TourQueryType,
+): Promise<TourQueryType> => {
+  const page = Number(req.query.page || 1);
+  const limit = Number(req.query.limit) || 5;
+  const skipBy = (page - 1) * limit;
+  query = query.limit(limit);
+  query = query.skip(skipBy);
+  console.log(`limit: ${limit}, skip: ${skipBy}`);
+
+  if (req.query.page) {
+    const documentCount = await Tour.countDocuments();
+    if (skipBy >= documentCount) throw new Error('Page is not found');
+  }
+
+  return query;
 };
 
 /**
@@ -109,10 +175,11 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
             const filterValue = filterItem.split(':')[1]; /// i.e: 5
 
             /// convert i.e: 'gte' => '$gte'
-            filterKey = key.replace(
-              /\b(gte,gt,lte,lt,eq)\b/g,
+            filterKey = filterKey.replace(
+              /\b(gte|gt|lte|lt|eq)\b/g,
               (match) => `$${match}`,
             );
+            //console.log(`filterKey ${filterKey} => ${filterKey2}`);
 
             /// insert filter key & value to Map. i.e: Map { $gte => 5, $lte => 9 }
             numberFiltersMap.set(filterKey, Number(filterValue));
@@ -140,67 +207,16 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
     // console.log(Object.assign(searchParam));
 
     /// create query and set filters
-    let query = Tour.find(advFilters);
+    let query: TourQueryType = Tour.find(advFilters);
 
-    /// apply sorting
-    /// i.e: sort=-price,difficulty => price desc, difficulty asc
-    ///
-    if (req.query.sort) {
-      const sortBy = String(req.query.sort).split(',').join(' ');
-      // const sort = String(req.query.sort).replace(/,/g, ' ');
-      console.log('sort: ', sortBy);
+    query = sortQuery(req, query);
 
-      ///sort=name,duration
-      query.sort(sortBy);
-    } else {
-      query.sort('-createdAt name');
-    }
+    query = selectFieldsQuery(req, query);
 
-    /// select fields
-    /// i.e:
-    ///   fields: name, duration -> select only name and duration fields.
-    ///   fields: -summary,-description -> select all but exclude summary and description fields.
-    ///
-    if (req.query.fields) {
-      let fields = String(req.query.fields).split(',').join(' ');
-      // const fields = String(req.query.fields).replace(/,/g, ' ');
-
-      /// exclude __v field if any of the fields has - (exclude)
-      if (
-        String(req.query.fields)
-          .split(',')
-          .some((el) => el[0] === '-')
-      ) {
-        fields = fields + ' -__v';
-      }
-      console.log('fields:', fields);
-      query.select(fields);
-    } else {
-      query.select('-__v');
-    }
-
-    /// testing skip
-    // if (req.query.skip) {
-    //   query = query.skip(Number(req.query.skip));
-    // }
-
-    /// pagination
-    /// limit=5 & page=2 => limit=5 & skip=5 for records no: 6 - 10
-
-    const page = Number(req.query.page || 1);
-    const limit = Number(req.query.limit) || 5;
-    const skipBy = (page - 1) * limit;
-    query = query.limit(limit);
-    query = query.skip(skipBy);
-    console.log(`limit: ${limit}, skip: ${skipBy}`);
-
-    if (req.query.page) {
-      const documentCount = await Tour.countDocuments();
-      if (skipBy >= documentCount) throw new Error('Page is not found');
-    }
+    query = (await paginateQuery(req, query)) as unknown as TourQueryType;
 
     /// execute query
-    const tours = await query; //or use: query.exec();
+    const tours = await query; //or use: query.exec() !Notworking;
 
     /// response
     res.json({
