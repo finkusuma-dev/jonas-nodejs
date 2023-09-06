@@ -1,5 +1,6 @@
 import type * as E from 'express';
 import type QueryString from 'qs';
+import { QueryType } from '../types/mongooseTypes';
 import Tour, { ITour, TourQueryType } from '../models/tourModel';
 import { Query, Document, Types as M } from 'mongoose';
 
@@ -53,30 +54,8 @@ export const aliasTop5Cheap = (
 ///
 function sortQuery<T>(
   queryStr: QueryString.ParsedQs,
-  query: Query<
-    (Document<unknown, {}, T> &
-      T & {
-        _id: M.ObjectId;
-      })[],
-    Document<unknown, {}, T> &
-      T & {
-        _id: M.ObjectId;
-      },
-    {},
-    ITour
-  >,
-): Query<
-  (Document<unknown, {}, T> &
-    T & {
-      _id: M.ObjectId;
-    })[],
-  Document<unknown, {}, T> &
-    T & {
-      _id: M.ObjectId;
-    },
-  {},
-  ITour
-> {
+  query: QueryType<T>,
+): QueryType<T> {
   if (queryStr.sort) {
     const sortBy = String(queryStr.sort).split(',').join(' ');
     // const sort = String(req.query.sort).replace(/,/g, ' ');
