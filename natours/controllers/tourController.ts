@@ -50,158 +50,177 @@ export const aliasTop5Cheap = (
   next();
 };
 
-function findQuery<T>(
-  model: ModelType<T>,
-  numberProps: Array<string>,
-  queryString: QueryString.ParsedQs,
-): QueryType<T> {
-  /// Extract tour object properties into array, i.e : [name, duration, ... ]
-  const modelProps = Object.keys(model.schema.obj);
+// interface APIFeaturesType<T> {
+//   // model: ModelType<T>;
+//   numberProps: Array<string>;
+//   queryString: QueryString.ParsedQs;
 
-  /// Remove keys from query string that are not in tourProps, i.e: sort, fields, page, & limit
-  const queryStr = { ...queryString };
+//   query: QueryType<T>;
+//   // fn(): this;
+//   sortQuery(): this;
+//   selectFieldsQuery(): this;
+// }
 
-  for (const [key] of Object.entries(queryString)) {
-    // console.log(`key: ${key}, value: ${value}`);
-    if (!modelProps.includes(key)) {
-      /// delete prop from object
-      delete queryStr[key];
+export class APIFeatures<T> {
+  query: QueryType<T>;
+  modelProps: Array<string>;
+  numberProps: Array<string>;
+  queryString: QueryString.ParsedQs;
+
+  // model: ModelType<T>,
+  constructor(
+    query: QueryType<T>,
+    modelProps: Array<string>,
+    modelNumberProps: Array<string>,
+    queryString: QueryString.ParsedQs,
+  ) {
+    // this.model = model;
+    this.query = query;
+    this.modelProps = modelProps;
+    this.numberProps = modelNumberProps;
+    this.queryString = queryString;
+
+    // const modelProps = Object.keys(model.schema.obj);
+
+    /// Remove keys from query string that are not in tourProps, i.e: sort, fields, page, & limit
+    const queryStr = { ...queryString };
+
+    for (const [key] of Object.entries(queryString)) {
+      // console.log(`key: ${key}, value: ${value}`);
+      if (!this.modelProps.includes(key)) {
+        /// delete prop from object
+        delete queryStr[key];
+      }
     }
-  }
-  console.log('searchParams:', queryStr);
+    console.log('searchParams:', queryStr);
 
-  /// Create advance filtering from filterParams
-  /// i.e:
-  /// filterParams = duration=gte:5,lte:9&price=lte:1000&difficuly=easy
-  ///   becomes:
-  ///   Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
-  ///
-  let advFiltersMap: Map<string, any> = new Map(); /// will create advFilters Object from this
+    /// Create advance filtering from filterParams
+    /// i.e:
+    /// filterParams = duration=gte:5,lte:9&price=lte:1000&difficuly=easy
+    ///   becomes:
+    ///   Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
+    ///
+    let advFiltersMap: Map<string, any> = new Map(); /// will create advFilters Object from this
 
-  for (const [key, value] of Object.entries(queryStr)) {
-    if (
-      /// key is one of the numberProps, i.e: ['duration','price']
-      numberProps.includes(key) &&
-      /// and value has ":", i.e: gte:5
-      String(value).indexOf(':') > -1
-    ) {
-      /// Advance filtering for number,
-      /// i.e: duration=gte:5,lte:9
-      /// becomes Map { duration => { $gte: 5, $lte: 9 } }
-      ///
-      let numberFiltersMap: Map<string, any> = new Map();
-      String(value)
-        .split(',')
-        .forEach((filterItem) => {
-          let filterKey = filterItem.split(':')[0]; /// i.e: 'gte'
-          const filterValue = filterItem.split(':')[1]; /// i.e: 5
+    for (const [key, value] of Object.entries(queryStr)) {
+      if (
+        /// key is one of the modelNumberProps, i.e: ['duration','price']
+        modelNumberProps.includes(key) &&
+        /// and value has ":", i.e: gte:5
+        String(value).indexOf(':') > -1
+      ) {
+        /// Advance filtering for number,
+        /// i.e: duration=gte:5,lte:9
+        /// becomes Map { duration => { $gte: 5, $lte: 9 } }
+        ///
+        let numberFiltersMap: Map<string, any> = new Map();
+        String(value)
+          .split(',')
+          .forEach((filterItem) => {
+            let filterKey = filterItem.split(':')[0]; /// i.e: 'gte'
+            const filterValue = filterItem.split(':')[1]; /// i.e: 5
 
-          /// convert i.e: 'gte' => '$gte'
-          filterKey = filterKey.replace(
-            /\b(gte|gt|lte|lt|eq)\b/g,
-            (match) => `$${match}`,
-          );
-          //console.log(`filterKey ${filterKey} => ${filterKey2}`);
+            /// convert i.e: 'gte' => '$gte'
+            filterKey = filterKey.replace(
+              /\b(gte|gt|lte|lt|eq)\b/g,
+              (match) => `$${match}`,
+            );
+            //console.log(`filterKey ${filterKey} => ${filterKey2}`);
 
-          /// insert filter key & value to Map. i.e: Map { $gte => 5, $lte => 9 }
-          numberFiltersMap.set(filterKey, Number(filterValue));
-        });
+            /// insert filter key & value to Map. i.e: Map { $gte => 5, $lte => 9 }
+            numberFiltersMap.set(filterKey, Number(filterValue));
+          });
 
-      /// insert key and (Object of numberFilter) to advFilterMap
-      /// i.e: Map { duration => { '$gte': 5, '$lte': 9 }, price => { '$lte': 1000 } }
-      ///
-      advFiltersMap.set(key, Object.fromEntries(numberFiltersMap));
-      console.log('filtersMap.set (number):', key);
-    } else {
-      /// normal filtering, i.e: difficult= easy
-      /// filtering Map: i.e: { diifficult => easy }
-      ///
-      advFiltersMap.set(key, value);
-      console.log('filtersMap.set (normal):', key, value);
+        /// insert key and (Object of numberFilter) to advFilterMap
+        /// i.e: Map { duration => { '$gte': 5, '$lte': 9 }, price => { '$lte': 1000 } }
+        ///
+        advFiltersMap.set(key, Object.fromEntries(numberFiltersMap));
+        console.log('filtersMap.set (number):', key);
+      } else {
+        /// normal filtering, i.e: difficult= easy
+        /// filtering Map: i.e: { diifficult => easy }
+        ///
+        advFiltersMap.set(key, value);
+        console.log('filtersMap.set (normal):', key, value);
+      }
     }
+
+    /// create advFilters Object from Map
+    /// Map { duration => { '$gte': 5, '$lte': 9 }, price => { '$lte': 1000 }, 'difficult' => 'easy' }
+    ///   becomes:
+    ///   Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
+    const advFilters = Object.fromEntries(advFiltersMap);
+
+    console.log('advFilters', advFilters);
+    // console.log(Object.assign(searchParam));
+
+    /// create query and set filters
+    this.query = this.query.find(advFilters as FilterQuery<T>);
   }
 
-  /// create advFilters Object from Map
-  /// Map { duration => { '$gte': 5, '$lte': 9 }, price => { '$lte': 1000 }, 'difficult' => 'easy' }
-  ///   becomes:
-  ///   Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
-  const advFilters = Object.fromEntries(advFiltersMap);
-
-  console.log('advFilters', advFilters);
-  // console.log(Object.assign(searchParam));
-
-  /// create query and set filters
-  const query = model.find(advFilters as FilterQuery<T>);
-
-  return query;
-}
-/// apply sorting
-/// i.e: sort=-price,difficulty => price desc, difficulty asc
-///
-function sortQuery<T>(
-  queryStr: QueryString.ParsedQs,
-  query: QueryType<T>,
-): QueryType<T> {
-  if (queryStr.sort) {
-    const sortBy = String(queryStr.sort).split(',').join(' ');
-    // const sort = String(req.query.sort).replace(/,/g, ' ');
-    console.log('sort: ', sortBy);
-
-    ///sort=name,duration
-    query.sort(sortBy);
-  } else {
-    query.sort('-createdAt name');
-  }
-
-  return query;
-}
-
-/// select fields
-/// i.e:
-///   fields: name, duration -> select only name and duration fields.
-///   fields: -summary,-description -> select all but exclude summary and description fields.
-///
-function selectFieldsQuery<T>(
-  queryStr: QueryString.ParsedQs,
-  query: QueryType<T>, // Query<TourResultDocType,TourDocType,{},ITour>,
-) {
-  if (queryStr.fields) {
-    let fields = String(queryStr.fields).split(',').join(' ');
-    // const fields = String(queryStr.fields).replace(/,/g, ' ');
-
-    /// exclude __v field if any of the fields has - (exclude)
-    if (
-      String(queryStr.fields)
-        .split(',')
-        .some((el) => el[0] === '-')
-    ) {
-      fields = fields + ' -__v';
-    }
-    console.log('fields:', fields);
-    query = query.select<T>(fields) as QueryType<T>;
-  } else {
-    query = query.select<T>('-__v') as QueryType<T>;
-  }
-
-  return query;
-}
-
-function paginateQuery<T>(
-  queryStr: QueryString.ParsedQs,
-  query: QueryType<T>,
-): QueryType<T> {
-  const page = Number(queryStr.page || 1);
-  const limit = Number(queryStr.limit) || 5;
-  const skipBy = (page - 1) * limit;
-  query = query.limit(limit).skip(skipBy);
-  console.log(`limit: ${limit}, skip: ${skipBy}`);
-
-  // if (queryStr.page) {
-  //   const documentCount = await Tour.countDocuments();
-  //   if (skipBy >= documentCount) throw new Error('Page is not found');
+  // fn(): this {
+  //   return this;
   // }
 
-  return query;
+  /// apply sorting
+  /// i.e: sort=-price,difficulty => price desc, difficulty asc
+  ///
+  sort(): this {
+    if (this.queryString.sort) {
+      const sortBy = String(this.queryString.sort).split(',').join(' ');
+      // const sort = String(req.query.sort).replace(/,/g, ' ');
+      console.log('sort: ', sortBy);
+
+      ///sort=name,duration
+      this.query = this.query.sort(sortBy);
+    } else {
+      this.query = this.query.sort('-createdAt name');
+    }
+
+    return this;
+  }
+
+  /// select fields
+  /// i.e:
+  ///   fields: name, duration -> select only name and duration fields.
+  ///   fields: -summary,-description -> select all but exclude summary and description fields.
+  ///
+  selectFields(): this {
+    if (this.queryString.fields) {
+      let fields = String(this.queryString.fields).split(',').join(' ');
+      // const fields = String(this.queryString.fields).replace(/,/g, ' ');
+
+      /// exclude __v field if any of the fields has - (exclude)
+      if (
+        String(this.queryString.fields)
+          .split(',')
+          .some((el) => el[0] === '-')
+      ) {
+        fields = fields + ' -__v';
+      }
+      console.log('fields:', fields);
+      this.query = this.query.select<T>(fields) as QueryType<T>;
+    } else {
+      this.query = this.query.select<T>('-__v') as QueryType<T>;
+    }
+
+    return this;
+  }
+
+  paginate(): this {
+    const page = Number(this.queryString.page || 1);
+    const limit = Number(this.queryString.limit) || 5;
+    const skipBy = (page - 1) * limit;
+    this.query = this.query.limit(limit).skip(skipBy);
+    console.log(`limit: ${limit}, skip: ${skipBy}`);
+
+    // if (queryStr.page) {
+    //   const documentCount = await Tour.countDocuments();
+    //   if (skipBy >= documentCount) throw new Error('Page is not found');
+    // }
+
+    return this;
+  }
 }
 
 /**
@@ -218,8 +237,9 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
   try {
     // console.log('req.query', req.query);
 
-    const query = findQuery<ITour>(
-      Tour,
+    const apiFeatures = new APIFeatures<ITour>(
+      Tour.find(),
+      Object.keys(Tour.schema.obj),
       [
         'duration',
         'maxGroupSize',
@@ -228,16 +248,13 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
         'price',
       ],
       req.query,
-    );
-
-    query = sortQuery(req.query, query);
-
-    query = selectFieldsQuery(req.query, query);
-
-    query = paginateQuery(req.query, query);
+    )
+      .sort()
+      .selectFields()
+      .paginate();
 
     /// execute query
-    const tours = await query; //or use: query.exec();
+    const tours = await apiFeatures.query; //or use: query.exec();
 
     /// response
     res.json({

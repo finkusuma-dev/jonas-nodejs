@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteTour = exports.updateTour = exports.createNewTour = exports.getTour = exports.getAllTours = exports.aliasTop5Cheap = void 0;
+exports.deleteTour = exports.updateTour = exports.createNewTour = exports.getTour = exports.getAllTours = exports.APIFeatures = exports.aliasTop5Cheap = void 0;
 const tourModel_1 = __importDefault(require("../models/tourModel"));
 //import { Query, Document, Model, Types as M } from 'mongoose';
 // let tours = [];
@@ -47,259 +47,142 @@ const aliasTop5Cheap = (req, res, next) => {
 };
 exports.aliasTop5Cheap = aliasTop5Cheap;
 // interface APIFeaturesType<T> {
-//   model: ModelType<T>;
+//   // model: ModelType<T>;
 //   numberProps: Array<string>;
 //   queryString: QueryString.ParsedQs;
 //   query: QueryType<T>;
-//   fn(): this;
+//   // fn(): this;
 //   sortQuery(): this;
 //   selectFieldsQuery(): this;
 // }
-// class APIFeatures<T> implements APIFeaturesType<T> {
-//   model: ModelType<T>;
-//   numberProps: Array<string>;
-//   queryString: QueryString.ParsedQs;
-//   query: QueryType<T>;
-//   constructor(
-//     model: ModelType<T>,
-//     numberProps: Array<string>,
-//     queryString: QueryString.ParsedQs,
-//   ) {
-//     this.model = model;
-//     this.numberProps = numberProps;
-//     this.queryString = queryString;
-//     const modelProps = Object.keys(model.schema.obj);
-//     /// Remove keys from query string that are not in tourProps, i.e: sort, fields, page, & limit
-//     const queryStr = { ...queryString };
-//     for (const [key] of Object.entries(queryString)) {
-//       // console.log(`key: ${key}, value: ${value}`);
-//       if (!modelProps.includes(key)) {
-//         /// delete prop from object
-//         delete queryStr[key];
-//       }
-//     }
-//     console.log('searchParams:', queryStr);
-//     /// Create advance filtering from filterParams
-//     /// i.e:
-//     /// filterParams = duration=gte:5,lte:9&price=lte:1000&difficuly=easy
-//     ///   becomes:
-//     ///   Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
-//     ///
-//     let advFiltersMap: Map<string, any> = new Map(); /// will create advFilters Object from this
-//     for (const [key, value] of Object.entries(queryStr)) {
-//       if (
-//         /// key is one of the numberProps, i.e: ['duration','price']
-//         numberProps.includes(key) &&
-//         /// and value has ":", i.e: gte:5
-//         String(value).indexOf(':') > -1
-//       ) {
-//         /// Advance filtering for number,
-//         /// i.e: duration=gte:5,lte:9
-//         /// becomes Map { duration => { $gte: 5, $lte: 9 } }
-//         ///
-//         let numberFiltersMap: Map<string, any> = new Map();
-//         String(value)
-//           .split(',')
-//           .forEach((filterItem) => {
-//             let filterKey = filterItem.split(':')[0]; /// i.e: 'gte'
-//             const filterValue = filterItem.split(':')[1]; /// i.e: 5
-//             /// convert i.e: 'gte' => '$gte'
-//             filterKey = filterKey.replace(
-//               /\b(gte|gt|lte|lt|eq)\b/g,
-//               (match) => `$${match}`,
-//             );
-//             //console.log(`filterKey ${filterKey} => ${filterKey2}`);
-//             /// insert filter key & value to Map. i.e: Map { $gte => 5, $lte => 9 }
-//             numberFiltersMap.set(filterKey, Number(filterValue));
-//           });
-//         /// insert key and (Object of numberFilter) to advFilterMap
-//         /// i.e: Map { duration => { '$gte': 5, '$lte': 9 }, price => { '$lte': 1000 } }
-//         ///
-//         advFiltersMap.set(key, Object.fromEntries(numberFiltersMap));
-//         console.log('filtersMap.set (number):', key);
-//       } else {
-//         /// normal filtering, i.e: difficult= easy
-//         /// filtering Map: i.e: { diifficult => easy }
-//         ///
-//         advFiltersMap.set(key, value);
-//         console.log('filtersMap.set (normal):', key, value);
-//       }
-//     }
-//     /// create advFilters Object from Map
-//     /// Map { duration => { '$gte': 5, '$lte': 9 }, price => { '$lte': 1000 }, 'difficult' => 'easy' }
-//     ///   becomes:
-//     ///   Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
-//     const advFilters = Object.fromEntries(advFiltersMap);
-//     console.log('advFilters', advFilters);
-//     // console.log(Object.assign(searchParam));
-//     /// create query and set filters
-//     this.query = model.find(advFilters as FilterQuery<T>);
-//   }
-//   fn(): this {
-//     return this;
-//   }
-//   sortQuery(): this {
-//     if (this.queryString.sort) {
-//       const sortBy = String(this.queryString.sort).split(',').join(' ');
-//       // const sort = String(req.query.sort).replace(/,/g, ' ');
-//       console.log('sort: ', sortBy);
-//       ///sort=name,duration
-//       this.query = this.query.sort(sortBy);
-//     } else {
-//       this.query = this.query.sort('-createdAt name');
-//     }
-//     return this;
-//   }
-//   selectFieldsQuery(): this {
-//     if (this.queryString.fields) {
-//       let fields = String(this.queryString.fields).split(',').join(' ');
-//       // const fields = String(this.queryString.fields).replace(/,/g, ' ');
-//       /// exclude __v field if any of the fields has - (exclude)
-//       if (
-//         String(this.queryString.fields)
-//           .split(',')
-//           .some((el) => el[0] === '-')
-//       ) {
-//         fields = fields + ' -__v';
-//       }
-//       console.log('fields:', fields);
-//       this.query = this.query.select<T>(fields) as QueryType<T>;
-//     } else {
-//       this.query = this.query.select<T>('-__v') as QueryType<T>;
-//     }
-//     return this;
-//   }
-//   paginateQuery(): this {
-//     const page = Number(this.queryString.page || 1);
-//     const limit = Number(this.queryString.limit) || 5;
-//     const skipBy = (page - 1) * limit;
-//     this.query = this.query.limit(limit).skip(skipBy);
-//     console.log(`limit: ${limit}, skip: ${skipBy}`);
-//     // if (queryStr.page) {
-//     //   const documentCount = await Tour.countDocuments();
-//     //   if (skipBy >= documentCount) throw new Error('Page is not found');
-//     // }
-//     return this;
-//   }
-// }
-function findQuery(model, numberProps, queryString) {
-    /// Extract tour object properties into array, i.e : [name, duration, ... ]
-    const modelProps = Object.keys(model.schema.obj);
-    /// Remove keys from query string that are not in tourProps, i.e: sort, fields, page, & limit
-    const queryStr = Object.assign({}, queryString);
-    for (const [key] of Object.entries(queryString)) {
-        // console.log(`key: ${key}, value: ${value}`);
-        if (!modelProps.includes(key)) {
-            /// delete prop from object
-            delete queryStr[key];
+class APIFeatures {
+    // model: ModelType<T>,
+    constructor(query, modelProps, modelNumberProps, queryString) {
+        // this.model = model;
+        this.query = query;
+        this.modelProps = modelProps;
+        this.numberProps = modelNumberProps;
+        this.queryString = queryString;
+        // const modelProps = Object.keys(model.schema.obj);
+        /// Remove keys from query string that are not in tourProps, i.e: sort, fields, page, & limit
+        const queryStr = Object.assign({}, queryString);
+        for (const [key] of Object.entries(queryString)) {
+            // console.log(`key: ${key}, value: ${value}`);
+            if (!this.modelProps.includes(key)) {
+                /// delete prop from object
+                delete queryStr[key];
+            }
         }
+        console.log('searchParams:', queryStr);
+        /// Create advance filtering from filterParams
+        /// i.e:
+        /// filterParams = duration=gte:5,lte:9&price=lte:1000&difficuly=easy
+        ///   becomes:
+        ///   Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
+        ///
+        let advFiltersMap = new Map(); /// will create advFilters Object from this
+        for (const [key, value] of Object.entries(queryStr)) {
+            if (
+            /// key is one of the modelNumberProps, i.e: ['duration','price']
+            modelNumberProps.includes(key) &&
+                /// and value has ":", i.e: gte:5
+                String(value).indexOf(':') > -1) {
+                /// Advance filtering for number,
+                /// i.e: duration=gte:5,lte:9
+                /// becomes Map { duration => { $gte: 5, $lte: 9 } }
+                ///
+                let numberFiltersMap = new Map();
+                String(value)
+                    .split(',')
+                    .forEach((filterItem) => {
+                    let filterKey = filterItem.split(':')[0]; /// i.e: 'gte'
+                    const filterValue = filterItem.split(':')[1]; /// i.e: 5
+                    /// convert i.e: 'gte' => '$gte'
+                    filterKey = filterKey.replace(/\b(gte|gt|lte|lt|eq)\b/g, (match) => `$${match}`);
+                    //console.log(`filterKey ${filterKey} => ${filterKey2}`);
+                    /// insert filter key & value to Map. i.e: Map { $gte => 5, $lte => 9 }
+                    numberFiltersMap.set(filterKey, Number(filterValue));
+                });
+                /// insert key and (Object of numberFilter) to advFilterMap
+                /// i.e: Map { duration => { '$gte': 5, '$lte': 9 }, price => { '$lte': 1000 } }
+                ///
+                advFiltersMap.set(key, Object.fromEntries(numberFiltersMap));
+                console.log('filtersMap.set (number):', key);
+            }
+            else {
+                /// normal filtering, i.e: difficult= easy
+                /// filtering Map: i.e: { diifficult => easy }
+                ///
+                advFiltersMap.set(key, value);
+                console.log('filtersMap.set (normal):', key, value);
+            }
+        }
+        /// create advFilters Object from Map
+        /// Map { duration => { '$gte': 5, '$lte': 9 }, price => { '$lte': 1000 }, 'difficult' => 'easy' }
+        ///   becomes:
+        ///   Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
+        const advFilters = Object.fromEntries(advFiltersMap);
+        console.log('advFilters', advFilters);
+        // console.log(Object.assign(searchParam));
+        /// create query and set filters
+        this.query = this.query.find(advFilters);
     }
-    console.log('searchParams:', queryStr);
-    /// Create advance filtering from filterParams
-    /// i.e:
-    /// filterParams = duration=gte:5,lte:9&price=lte:1000&difficuly=easy
-    ///   becomes:
-    ///   Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
+    // fn(): this {
+    //   return this;
+    // }
+    /// apply sorting
+    /// i.e: sort=-price,difficulty => price desc, difficulty asc
     ///
-    let advFiltersMap = new Map(); /// will create advFilters Object from this
-    for (const [key, value] of Object.entries(queryStr)) {
-        if (
-        /// key is one of the numberProps, i.e: ['duration','price']
-        numberProps.includes(key) &&
-            /// and value has ":", i.e: gte:5
-            String(value).indexOf(':') > -1) {
-            /// Advance filtering for number,
-            /// i.e: duration=gte:5,lte:9
-            /// becomes Map { duration => { $gte: 5, $lte: 9 } }
-            ///
-            let numberFiltersMap = new Map();
-            String(value)
-                .split(',')
-                .forEach((filterItem) => {
-                let filterKey = filterItem.split(':')[0]; /// i.e: 'gte'
-                const filterValue = filterItem.split(':')[1]; /// i.e: 5
-                /// convert i.e: 'gte' => '$gte'
-                filterKey = filterKey.replace(/\b(gte|gt|lte|lt|eq)\b/g, (match) => `$${match}`);
-                //console.log(`filterKey ${filterKey} => ${filterKey2}`);
-                /// insert filter key & value to Map. i.e: Map { $gte => 5, $lte => 9 }
-                numberFiltersMap.set(filterKey, Number(filterValue));
-            });
-            /// insert key and (Object of numberFilter) to advFilterMap
-            /// i.e: Map { duration => { '$gte': 5, '$lte': 9 }, price => { '$lte': 1000 } }
-            ///
-            advFiltersMap.set(key, Object.fromEntries(numberFiltersMap));
-            console.log('filtersMap.set (number):', key);
+    sort() {
+        if (this.queryString.sort) {
+            const sortBy = String(this.queryString.sort).split(',').join(' ');
+            // const sort = String(req.query.sort).replace(/,/g, ' ');
+            console.log('sort: ', sortBy);
+            ///sort=name,duration
+            this.query = this.query.sort(sortBy);
         }
         else {
-            /// normal filtering, i.e: difficult= easy
-            /// filtering Map: i.e: { diifficult => easy }
-            ///
-            advFiltersMap.set(key, value);
-            console.log('filtersMap.set (normal):', key, value);
+            this.query = this.query.sort('-createdAt name');
         }
+        return this;
     }
-    /// create advFilters Object from Map
-    /// Map { duration => { '$gte': 5, '$lte': 9 }, price => { '$lte': 1000 }, 'difficult' => 'easy' }
-    ///   becomes:
-    ///   Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
-    const advFilters = Object.fromEntries(advFiltersMap);
-    console.log('advFilters', advFilters);
-    // console.log(Object.assign(searchParam));
-    /// create query and set filters
-    const query = model.find(advFilters);
-    return query;
-}
-/// apply sorting
-/// i.e: sort=-price,difficulty => price desc, difficulty asc
-///
-function sortQuery(queryStr, query) {
-    if (queryStr.sort) {
-        const sortBy = String(queryStr.sort).split(',').join(' ');
-        // const sort = String(req.query.sort).replace(/,/g, ' ');
-        console.log('sort: ', sortBy);
-        ///sort=name,duration
-        query.sort(sortBy);
-    }
-    else {
-        query.sort('-createdAt name');
-    }
-    return query;
-}
-/// select fields
-/// i.e:
-///   fields: name, duration -> select only name and duration fields.
-///   fields: -summary,-description -> select all but exclude summary and description fields.
-///
-function selectFieldsQuery(queryStr, query) {
-    if (queryStr.fields) {
-        let fields = String(queryStr.fields).split(',').join(' ');
-        // const fields = String(queryStr.fields).replace(/,/g, ' ');
-        /// exclude __v field if any of the fields has - (exclude)
-        if (String(queryStr.fields)
-            .split(',')
-            .some((el) => el[0] === '-')) {
-            fields = fields + ' -__v';
+    /// select fields
+    /// i.e:
+    ///   fields: name, duration -> select only name and duration fields.
+    ///   fields: -summary,-description -> select all but exclude summary and description fields.
+    ///
+    selectFields() {
+        if (this.queryString.fields) {
+            let fields = String(this.queryString.fields).split(',').join(' ');
+            // const fields = String(this.queryString.fields).replace(/,/g, ' ');
+            /// exclude __v field if any of the fields has - (exclude)
+            if (String(this.queryString.fields)
+                .split(',')
+                .some((el) => el[0] === '-')) {
+                fields = fields + ' -__v';
+            }
+            console.log('fields:', fields);
+            this.query = this.query.select(fields);
         }
-        console.log('fields:', fields);
-        query = query.select(fields);
+        else {
+            this.query = this.query.select('-__v');
+        }
+        return this;
     }
-    else {
-        query = query.select('-__v');
+    paginate() {
+        const page = Number(this.queryString.page || 1);
+        const limit = Number(this.queryString.limit) || 5;
+        const skipBy = (page - 1) * limit;
+        this.query = this.query.limit(limit).skip(skipBy);
+        console.log(`limit: ${limit}, skip: ${skipBy}`);
+        // if (queryStr.page) {
+        //   const documentCount = await Tour.countDocuments();
+        //   if (skipBy >= documentCount) throw new Error('Page is not found');
+        // }
+        return this;
     }
-    return query;
 }
-function paginateQuery(queryStr, query) {
-    const page = Number(queryStr.page || 1);
-    const limit = Number(queryStr.limit) || 5;
-    const skipBy = (page - 1) * limit;
-    query = query.limit(limit).skip(skipBy);
-    console.log(`limit: ${limit}, skip: ${skipBy}`);
-    // if (queryStr.page) {
-    //   const documentCount = await Tour.countDocuments();
-    //   if (skipBy >= documentCount) throw new Error('Page is not found');
-    // }
-    return query;
-}
+exports.APIFeatures = APIFeatures;
 /**
  * Query params:
  *    Advance filtering, i.e: duration=gte:5,lte:9&price=lte:1000&difficuly=easy.
@@ -313,32 +196,18 @@ function paginateQuery(queryStr, query) {
 const getAllTours = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // console.log('req.query', req.query);
-        // const apiFeatures = new APIFeatures<ITour>(
-        //   Tour,
-        //   [
-        //     'duration',
-        //     'maxGroupSize',
-        //     'ratingsAverage',
-        //     'ratingsQuantity',
-        //     'price',
-        //   ],
-        //   req.query,
-        // )
-        //   .sortQuery()
-        //   .selectFieldsQuery()
-        //   .paginateQuery();
-        let query = findQuery(tourModel_1.default, [
+        const apiFeatures = new APIFeatures(tourModel_1.default.find(), Object.keys(tourModel_1.default.schema.obj), [
             'duration',
             'maxGroupSize',
             'ratingsAverage',
             'ratingsQuantity',
             'price',
-        ], req.query);
-        query = sortQuery(req.query, query);
-        query = selectFieldsQuery(req.query, query);
-        query = paginateQuery(req.query, query);
+        ], req.query)
+            .sort()
+            .selectFields()
+            .paginate();
         /// execute query
-        const tours = yield query; //or use: query.exec();
+        const tours = yield apiFeatures.query; //or use: query.exec();
         /// response
         res.json({
             status: 'success',

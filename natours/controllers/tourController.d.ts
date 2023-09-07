@@ -1,5 +1,17 @@
 import type * as E from 'express';
+import type QueryString from 'qs';
+import { QueryType } from '../types/mongooseTypes';
 export declare const aliasTop5Cheap: (req: E.Request, res: E.Response, next: E.NextFunction) => void;
+export declare class APIFeatures<T> {
+    query: QueryType<T>;
+    modelProps: Array<string>;
+    numberProps: Array<string>;
+    queryString: QueryString.ParsedQs;
+    constructor(query: QueryType<T>, modelProps: Array<string>, modelNumberProps: Array<string>, queryString: QueryString.ParsedQs);
+    sort(): this;
+    selectFields(): this;
+    paginate(): this;
+}
 /**
  * Query params:
  *    Advance filtering, i.e: duration=gte:5,lte:9&price=lte:1000&difficuly=easy.
