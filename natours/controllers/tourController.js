@@ -55,12 +55,11 @@ function sortQuery(queryStr, query) {
         // const sort = String(req.query.sort).replace(/,/g, ' ');
         console.log('sort: ', sortBy);
         ///sort=name,duration
-        query = query.sort(sortBy);
+        query.sort(sortBy);
     }
     else {
-        query = query.sort('-createdAt name');
+        query.sort('-createdAt name');
     }
-    return query;
 }
 /// select fields
 /// i.e:
@@ -78,12 +77,11 @@ function selectFieldsQuery(queryStr, query) {
             fields = fields + ' -__v';
         }
         console.log('fields:', fields);
-        query = query.select(fields);
+        query.select(fields);
     }
     else {
-        query = query.select('-__v');
+        query.select('-__v');
     }
-    return query;
 }
 function paginateQuery(queryStr, query) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -98,7 +96,6 @@ function paginateQuery(queryStr, query) {
             if (skipBy >= documentCount)
                 throw new Error('Page is not found');
         }
-        return query;
     });
 }
 /**
@@ -182,11 +179,11 @@ const getAllTours = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         // console.log(Object.assign(searchParam));
         /// create query and set filters
         let query = tourModel_1.default.find(advFilters);
-        query = sortQuery(req.query, query);
-        query = selectFieldsQuery(req.query, query);
-        query = (yield paginateQuery(req.query, query));
+        sortQuery(req.query, query);
+        selectFieldsQuery(req.query, query);
+        yield paginateQuery(req.query, query);
         /// execute query
-        const tours = yield query; //or use: query.exec() !Notworking;
+        const tours = yield query; //or use: query.exec();
         /// response
         res.json({
             status: 'success',

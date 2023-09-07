@@ -52,21 +52,17 @@ export const aliasTop5Cheap = (
 /// apply sorting
 /// i.e: sort=-price,difficulty => price desc, difficulty asc
 ///
-function sortQuery<T>(
-  queryStr: QueryString.ParsedQs,
-  query: QueryType<T>,
-): QueryType<T> {
+function sortQuery<T>(queryStr: QueryString.ParsedQs, query: QueryType<T>) {
   if (queryStr.sort) {
     const sortBy = String(queryStr.sort).split(',').join(' ');
     // const sort = String(req.query.sort).replace(/,/g, ' ');
     console.log('sort: ', sortBy);
 
     ///sort=name,duration
-    query = query.sort(sortBy);
+    query.sort(sortBy);
   } else {
-    query = query.sort('-createdAt name');
+    query.sort('-createdAt name');
   }
-  return query;
 }
 
 /// select fields
@@ -77,7 +73,7 @@ function sortQuery<T>(
 function selectFieldsQuery<T>(
   queryStr: QueryString.ParsedQs,
   query: QueryType<T>, // Query<TourResultDocType,TourDocType,{},ITour>,
-): QueryType<T> {
+) {
   if (queryStr.fields) {
     let fields = String(queryStr.fields).split(',').join(' ');
     // const fields = String(queryStr.fields).replace(/,/g, ' ');
@@ -91,18 +87,16 @@ function selectFieldsQuery<T>(
       fields = fields + ' -__v';
     }
     console.log('fields:', fields);
-    query = query.select<T>(fields) as QueryType<T>;
+    query.select<T>(fields);
   } else {
-    query = query.select<T>('-__v') as QueryType<T>;
+    query.select<T>('-__v');
   }
-
-  return query;
 }
 
 async function paginateQuery<T>(
   queryStr: QueryString.ParsedQs,
   query: QueryType<T>,
-): Promise<QueryType<T>> {
+) {
   const page = Number(queryStr.page || 1);
   const limit = Number(queryStr.limit) || 5;
   const skipBy = (page - 1) * limit;
@@ -114,8 +108,6 @@ async function paginateQuery<T>(
     const documentCount = await Tour.countDocuments();
     if (skipBy >= documentCount) throw new Error('Page is not found');
   }
-
-  return query;
 }
 
 /**
@@ -212,19 +204,16 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
     // console.log(Object.assign(searchParam));
 
     /// create query and set filters
-    let query = Tour.find(advFilters);
+    let query: QueryType<ITour> = Tour.find(advFilters);
 
-    query = sortQuery(req.query, query);
+    sortQuery(req.query, query);
 
-    query = selectFieldsQuery(req.query, query);
+    selectFieldsQuery(req.query, query);
 
-    query = (await paginateQuery(
-      req.query,
-      query,
-    )) as unknown as QueryType<ITour>;
+    await paginateQuery(req.query, query);
 
     /// execute query
-    const tours = await query; //or use: query.exec() !Notworking;
+    const tours = await query; //or use: query.exec();
 
     /// response
     res.json({
