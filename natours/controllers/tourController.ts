@@ -108,11 +108,13 @@ function findQuery<T>(
         });
 
       /// insert key and (Object of numberFilter) to advFilterMap
+      /// i.e: Map { duration => { '$gte': 5, '$lte': 9 }, price => { '$lte': 1000 } }
+      ///
       advFiltersMap.set(key, Object.fromEntries(numberFiltersMap));
       console.log('filtersMap.set (number):', key);
     } else {
-      /// normal filtering, i.e: ratingsAverage= 5
-      /// filtering Map: i.e: { ratingsAverage => 5 }
+      /// normal filtering, i.e: difficult= easy
+      /// filtering Map: i.e: { diifficult => easy }
       ///
       advFiltersMap.set(key, value);
       console.log('filtersMap.set (normal):', key, value);
@@ -136,7 +138,10 @@ function findQuery<T>(
 /// apply sorting
 /// i.e: sort=-price,difficulty => price desc, difficulty asc
 ///
-function sortQuery<T>(queryStr: QueryString.ParsedQs, query: QueryType<T>) {
+function sortQuery<T>(
+  queryStr: QueryString.ParsedQs,
+  query: QueryType<T>,
+): QueryType<T> {
   if (queryStr.sort) {
     const sortBy = String(queryStr.sort).split(',').join(' ');
     // const sort = String(req.query.sort).replace(/,/g, ' ');
@@ -147,6 +152,8 @@ function sortQuery<T>(queryStr: QueryString.ParsedQs, query: QueryType<T>) {
   } else {
     query.sort('-createdAt name');
   }
+
+  return query;
 }
 
 /// select fields
@@ -171,27 +178,30 @@ function selectFieldsQuery<T>(
       fields = fields + ' -__v';
     }
     console.log('fields:', fields);
-    query.select<T>(fields);
+    query = query.select<T>(fields) as QueryType<T>;
   } else {
-    query.select<T>('-__v');
+    query = query.select<T>('-__v') as QueryType<T>;
   }
+
+  return query;
 }
 
-async function paginateQuery<T>(
+function paginateQuery<T>(
   queryStr: QueryString.ParsedQs,
   query: QueryType<T>,
-) {
+): QueryType<T> {
   const page = Number(queryStr.page || 1);
   const limit = Number(queryStr.limit) || 5;
   const skipBy = (page - 1) * limit;
-  query = query.limit(limit);
-  query = query.skip(skipBy);
+  query = query.limit(limit).skip(skipBy);
   console.log(`limit: ${limit}, skip: ${skipBy}`);
 
-  if (queryStr.page) {
-    const documentCount = await Tour.countDocuments();
-    if (skipBy >= documentCount) throw new Error('Page is not found');
-  }
+  // if (queryStr.page) {
+  //   const documentCount = await Tour.countDocuments();
+  //   if (skipBy >= documentCount) throw new Error('Page is not found');
+  // }
+
+  return query;
 }
 
 /**
@@ -220,11 +230,11 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
       req.query,
     );
 
-    sortQuery(req.query, query);
+    query = sortQuery(req.query, query);
 
-    selectFieldsQuery(req.query, query);
+    query = selectFieldsQuery(req.query, query);
 
-    await paginateQuery(req.query, query);
+    query = paginateQuery(req.query, query);
 
     /// execute query
     const tours = await query; //or use: query.exec();
