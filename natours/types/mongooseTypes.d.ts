@@ -1,4 +1,4 @@
-import { Query, Document, Types } from 'mongoose';
+import { Query, Document, Types, Model } from 'mongoose';
 export type QueryType<T> = Query<
   (Document<unknown, {}, T> &
     T & {
