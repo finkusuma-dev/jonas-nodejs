@@ -61,11 +61,11 @@ class APIFeatures {
         // this.model = model;
         this.query = query;
         this.modelProps = modelProps;
-        this.numberProps = modelNumberProps;
+        this.modelNumberProps = modelNumberProps;
         this.queryString = queryString;
         // const modelProps = Object.keys(model.schema.obj);
-        /// Remove keys from query string that are not in tourProps, i.e: sort, fields, page, & limit
         const queryStr = Object.assign({}, queryString);
+        /// Remove keys from queryString that are not in modelProps, i.e: sort, fields, page, & limit
         for (const [key] of Object.entries(queryString)) {
             // console.log(`key: ${key}, value: ${value}`);
             if (!this.modelProps.includes(key)) {
@@ -74,13 +74,13 @@ class APIFeatures {
             }
         }
         console.log('searchParams:', queryStr);
-        /// Create advance filtering from filterParams
+        /// Create advance filtering from queryString
         /// i.e:
-        /// filterParams = duration=gte:5,lte:9&price=lte:1000&difficuly=easy
+        /// queryString = duration=gte:5,lte:9&price=lte:1000&difficuly=easy
         ///   becomes:
         ///   Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
         ///
-        let advFiltersMap = new Map(); /// will create advFilters Object from this
+        let advFilters = {}; /// type of Object with key:string & value:any
         for (const [key, value] of Object.entries(queryStr)) {
             if (
             /// key is one of the modelNumberProps, i.e: ['duration','price']
@@ -89,9 +89,9 @@ class APIFeatures {
                 String(value).indexOf(':') > -1) {
                 /// Advance filtering for number,
                 /// i.e: duration=gte:5,lte:9
-                /// becomes Map { duration => { $gte: 5, $lte: 9 } }
+                /// becomes Object { duration : { $gte: 5, $lte: 9 } }
                 ///
-                let numberFiltersMap = new Map();
+                let numberFilters = {}; /// type of Object with key:strinng & value:number
                 String(value)
                     .split(',')
                     .forEach((filterItem) => {
@@ -99,31 +99,25 @@ class APIFeatures {
                     const filterValue = filterItem.split(':')[1]; /// i.e: 5
                     /// convert i.e: 'gte' => '$gte'
                     filterKey = filterKey.replace(/\b(gte|gt|lte|lt|eq)\b/g, (match) => `$${match}`);
-                    //console.log(`filterKey ${filterKey} => ${filterKey2}`);
-                    /// insert filter key & value to Map. i.e: Map { $gte => 5, $lte => 9 }
-                    numberFiltersMap.set(filterKey, Number(filterValue));
+                    /// insert filter key & value, i.e: Object { $gte: 5, $lte: 9 }
+                    numberFilters[filterKey] = Number(filterValue);
                 });
-                /// insert key and (Object of numberFilter) to advFilterMap
-                /// i.e: Map { duration => { '$gte': 5, '$lte': 9 }, price => { '$lte': 1000 } }
+                /// insert key and numberFilters to advFilters
+                /// i.e: Object { duration : { '$gte': 5, '$lte': 9 }, price : { '$lte': 1000 } }
                 ///
-                advFiltersMap.set(key, Object.fromEntries(numberFiltersMap));
+                advFilters[key] = numberFilters;
                 console.log('filtersMap.set (number):', key);
             }
-            else {
+            else if (typeof value === 'string' && value !== '') {
                 /// normal filtering, i.e: difficult= easy
-                /// filtering Map: i.e: { diifficult => easy }
+                ///   i.e: Object { difficult : easy }
                 ///
-                advFiltersMap.set(key, value);
+                advFilters[key] = value;
                 console.log('filtersMap.set (normal):', key, value);
             }
         }
-        /// create advFilters Object from Map
-        /// Map { duration => { '$gte': 5, '$lte': 9 }, price => { '$lte': 1000 }, 'difficult' => 'easy' }
-        ///   becomes:
-        ///   Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
-        const advFilters = Object.fromEntries(advFiltersMap);
+        /// advFilters = Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
         console.log('advFilters', advFilters);
-        // console.log(Object.assign(searchParam));
         /// create query and set filters
         this.query = this.query.find(advFilters);
     }

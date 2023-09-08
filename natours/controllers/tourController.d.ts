@@ -5,7 +5,7 @@ export declare const aliasTop5Cheap: (req: E.Request, res: E.Response, next: E.N
 export declare class APIFeatures<T> {
     query: QueryType<T>;
     modelProps: Array<string>;
-    numberProps: Array<string>;
+    modelNumberProps: Array<string>;
     queryString: QueryString.ParsedQs;
     constructor(query: QueryType<T>, modelProps: Array<string>, modelNumberProps: Array<string>, queryString: QueryString.ParsedQs);
     sort(): this;
