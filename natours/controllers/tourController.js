@@ -63,10 +63,12 @@ class APIFeatures {
         this.modelProps = modelProps;
         this.modelNumberProps = modelNumberProps;
         this.queryString = queryString;
+    }
+    filter() {
         // const modelProps = Object.keys(model.schema.obj);
-        const queryStr = Object.assign({}, queryString);
+        const queryStr = Object.assign({}, this.queryString);
         /// Remove keys from queryString that are not in modelProps, i.e: sort, fields, page, & limit
-        for (const [key] of Object.entries(queryString)) {
+        for (const [key] of Object.entries(this.queryString)) {
             // console.log(`key: ${key}, value: ${value}`);
             if (!this.modelProps.includes(key)) {
                 /// delete prop from object
@@ -84,7 +86,7 @@ class APIFeatures {
         for (const [key, value] of Object.entries(queryStr)) {
             if (
             /// key is one of the modelNumberProps, i.e: ['duration','price']
-            modelNumberProps.includes(key) &&
+            this.modelNumberProps.includes(key) &&
                 /// and value has ":", i.e: gte:5
                 String(value).indexOf(':') > -1) {
                 /// Advance filtering for number,
@@ -120,6 +122,7 @@ class APIFeatures {
         console.log('advFilters', advFilters);
         /// create query and set filters
         this.query = this.query.find(advFilters);
+        return this;
     }
     // fn(): this {
     //   return this;
@@ -197,6 +200,7 @@ const getAllTours = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             'ratingsQuantity',
             'price',
         ], req.query)
+            .filter()
             .sort()
             .selectFields()
             .paginate();

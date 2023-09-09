@@ -8,6 +8,7 @@ export declare class APIFeatures<T> {
     modelNumberProps: Array<string>;
     queryString: QueryString.ParsedQs;
     constructor(query: QueryType<T>, modelProps: Array<string>, modelNumberProps: Array<string>, queryString: QueryString.ParsedQs);
+    filter(): this;
     sort(): this;
     selectFields(): this;
     paginate(): this;

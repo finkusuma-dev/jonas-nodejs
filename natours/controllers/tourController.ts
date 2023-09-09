@@ -79,13 +79,15 @@ export class APIFeatures<T> {
     this.modelProps = modelProps;
     this.modelNumberProps = modelNumberProps;
     this.queryString = queryString;
+  }
 
+  filter(): this {
     // const modelProps = Object.keys(model.schema.obj);
 
-    const queryStr = { ...queryString };
+    const queryStr = { ...this.queryString };
 
     /// Remove keys from queryString that are not in modelProps, i.e: sort, fields, page, & limit
-    for (const [key] of Object.entries(queryString)) {
+    for (const [key] of Object.entries(this.queryString)) {
       // console.log(`key: ${key}, value: ${value}`);
 
       if (!this.modelProps.includes(key)) {
@@ -106,7 +108,7 @@ export class APIFeatures<T> {
     for (const [key, value] of Object.entries(queryStr)) {
       if (
         /// key is one of the modelNumberProps, i.e: ['duration','price']
-        modelNumberProps.includes(key) &&
+        this.modelNumberProps.includes(key) &&
         /// and value has ":", i.e: gte:5
         String(value).indexOf(':') > -1
       ) {
@@ -152,6 +154,8 @@ export class APIFeatures<T> {
 
     /// create query and set filters
     this.query = this.query.find(advFilters as FilterQuery<T>);
+
+    return this;
   }
 
   // fn(): this {
@@ -245,6 +249,7 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
       ],
       req.query,
     )
+      .filter()
       .sort()
       .selectFields()
       .paginate();
