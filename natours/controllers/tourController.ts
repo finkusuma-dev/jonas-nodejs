@@ -191,3 +191,55 @@ export const deleteTour = async (req: E.Request, res: E.Response) => {
     // return errorJson(res, 400, 'Delete tour failed', err);
   }
 };
+
+/// AGGREGATE
+
+export const getStats = async (req: E.Request, res: E.Response) => {
+  try {
+    const tours = await Tour.aggregate([
+      {
+        $group: {
+          _id: { $toUpper: '$difficulty' },
+          numTours: {
+            $count: {},
+          },
+          numRatings: {
+            $sum: '$ratingsQuantity',
+          },
+          avgRating: {
+            $avg: '$ratingsAverage',
+          },
+          avgPrice: {
+            $avg: '$price',
+          },
+          minPrice: {
+            $min: '$price',
+          },
+          maxPrice: {
+            $max: '$price',
+          },
+        },
+      },
+      {
+        $sort: {
+          avgRating: 1,
+        },
+      },
+      // {
+      //   $match: {
+      //     _id: { $ne: 'EASY' },
+      //   },
+      // },
+    ]);
+
+    res.json({
+      status: 'success',
+      results: tours.length,
+      data: {
+        tours,
+      },
+    });
+  } catch (err: any) {
+    return errorJson(res, 400, err.message);
+  }
+};

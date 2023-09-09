@@ -12,9 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteTour = exports.updateTour = exports.createNewTour = exports.getTour = exports.getAllTours = exports.aliasTop5Cheap = void 0;
+exports.getStats = exports.deleteTour = exports.updateTour = exports.createNewTour = exports.getTour = exports.getAllTours = exports.aliasTop5Cheap = void 0;
 const tourModel_1 = __importDefault(require("../models/tourModel"));
-const apiFeatures_1 = __importDefault(require("../utils/apiFeatures"));
+const APIFeatures_1 = __importDefault(require("../utils/APIFeatures"));
 //import { Query, Document, Model, Types as M } from 'mongoose';
 // let tours = [];
 // tourModel.find({}).then((docs) => {
@@ -60,7 +60,7 @@ exports.aliasTop5Cheap = aliasTop5Cheap;
 const getAllTours = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // console.log('req.query', req.query);
-        const apiFeatures = new apiFeatures_1.default(tourModel_1.default.find(), Object.keys(tourModel_1.default.schema.obj), [
+        const apiFeatures = new APIFeatures_1.default(tourModel_1.default.find(), Object.keys(tourModel_1.default.schema.obj), [
             'duration',
             'maxGroupSize',
             'ratingsAverage',
@@ -178,3 +178,54 @@ const deleteTour = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.deleteTour = deleteTour;
+/// AGGREGATE
+const getStats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const tours = yield tourModel_1.default.aggregate([
+            {
+                $group: {
+                    _id: { $toUpper: '$difficulty' },
+                    numTours: {
+                        $count: {},
+                    },
+                    numRatings: {
+                        $sum: '$ratingsQuantity',
+                    },
+                    avgRating: {
+                        $avg: '$ratingsAverage',
+                    },
+                    avgPrice: {
+                        $avg: '$price',
+                    },
+                    minPrice: {
+                        $min: '$price',
+                    },
+                    maxPrice: {
+                        $max: '$price',
+                    },
+                },
+            },
+            {
+                $sort: {
+                    avgRating: 1,
+                },
+            },
+            // {
+            //   $match: {
+            //     _id: { $ne: 'EASY' },
+            //   },
+            // },
+        ]);
+        res.json({
+            status: 'success',
+            results: tours.length,
+            data: {
+                tours,
+            },
+        });
+    }
+    catch (err) {
+        return errorJson(res, 400, err.message);
+    }
+});
+exports.getStats = getStats;

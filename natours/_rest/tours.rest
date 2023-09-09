@@ -53,3 +53,5 @@ Content-Type: application/json
 ##### DELETE TOUR
 DELETE  http://127.0.0.1:3000/api/v1/tours/64f4a58bf923c4ae08191106
 
+##### AGGREGATE
+GET http://127.0.0.1:3000/api/v1/tours/stats
