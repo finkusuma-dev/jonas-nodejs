@@ -48,14 +48,11 @@ const aliasTop5Cheap = (req, res, next) => {
 };
 exports.aliasTop5Cheap = aliasTop5Cheap;
 /**
- * Query params:
+ * @querystring :
  *    Advance filtering, i.e: duration=gte:5,lte:9&price=lte:1000&difficuly=easy.
  *    Sorting, i.e: sort=name,price,-duration.
  *    Select Fields, i,e: fields=name,price  or  fields=-summary,-description.
  *    Pagination: i.e: page=2&limit=10.
- *
- * @param req
- * @param res
  */
 const getAllTours = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -230,7 +227,7 @@ const getStats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.getStats = getStats;
 /**
- * @queryparam = year
+ * @querystring = year
  */
 const monthlyPlan = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
