@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStats = exports.deleteTour = exports.updateTour = exports.createNewTour = exports.getTour = exports.getAllTours = exports.aliasTop5Cheap = void 0;
+exports.monthlyPlan = exports.getStats = exports.deleteTour = exports.updateTour = exports.createNewTour = exports.getTour = exports.getAllTours = exports.aliasTop5Cheap = void 0;
 const tourModel_1 = __importDefault(require("../models/tourModel"));
 const APIFeatures_1 = __importDefault(require("../utils/APIFeatures"));
 //import { Query, Document, Model, Types as M } from 'mongoose';
@@ -229,3 +229,77 @@ const getStats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getStats = getStats;
+/**
+ * @queryparam = year
+ */
+const monthlyPlan = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const year = req.query.year;
+        const tours = yield tourModel_1.default.aggregate([
+            {
+                /// deconstruct array into the docs
+                $unwind: 
+                /**
+                 * path: Path to the array field.
+                 * includeArrayIndex: Optional name for index.
+                 * preserveNullAndEmptyArrays: Optional
+                 *   toggle to unwind null and empty values.
+                 */
+                {
+                    path: '$startDates',
+                },
+            },
+            {
+                $match: {
+                    startDates: {
+                        $gte: new Date(`${year}-01-01`),
+                        $lte: new Date(`${year}-12-31`),
+                    },
+                },
+            },
+            {
+                $group: {
+                    _id: {
+                        $month: {
+                            /// get the month from startDates
+                            date: '$startDates',
+                        },
+                    },
+                    count: {
+                        $count: {},
+                    },
+                    tours: {
+                        $push: '$name', /// join name as an array
+                    },
+                },
+            },
+            {
+                $addFields: {
+                    /// add new month field with the value of the _id
+                    month: '$_id',
+                },
+            },
+            {
+                $project: {
+                    _id: 0, /// remove the _id field
+                },
+            },
+            {
+                $sort: {
+                    count: -1,
+                },
+            },
+        ]);
+        res.json({
+            status: 'success',
+            results: tours.length,
+            data: {
+                tours,
+            },
+        });
+    }
+    catch (err) {
+        return errorJson(res, 400, err.message);
+    }
+});
+exports.monthlyPlan = monthlyPlan;

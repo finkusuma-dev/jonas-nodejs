@@ -243,3 +243,77 @@ export const getStats = async (req: E.Request, res: E.Response) => {
     return errorJson(res, 400, err.message);
   }
 };
+
+/**
+ * @queryparam = year
+ */
+export const monthlyPlan = async (req: E.Request, res: E.Response) => {
+  try {
+    const year = req.query.year;
+    const tours = await Tour.aggregate([
+      {
+        /// deconstruct array into the docs
+        $unwind:
+          /**
+           * path: Path to the array field.
+           * includeArrayIndex: Optional name for index.
+           * preserveNullAndEmptyArrays: Optional
+           *   toggle to unwind null and empty values.
+           */
+          {
+            path: '$startDates',
+          },
+      },
+      {
+        $match: {
+          startDates: {
+            $gte: new Date(`${year}-01-01`),
+            $lte: new Date(`${year}-12-31`),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $month: {
+              /// get the month from startDates
+              date: '$startDates',
+            },
+          },
+          count: {
+            $count: {},
+          },
+          tours: {
+            $push: '$name', /// join name as an array
+          },
+        },
+      },
+      {
+        $addFields: {
+          /// add new month field with the value of the _id
+          month: '$_id',
+        },
+      },
+      {
+        $project: {
+          _id: 0, /// remove the _id field
+        },
+      },
+      {
+        $sort: {
+          count: -1,
+        },
+      },
+    ]);
+
+    res.json({
+      status: 'success',
+      results: tours.length,
+      data: {
+        tours,
+      },
+    });
+  } catch (err: any) {
+    return errorJson(res, 400, err.message);
+  }
+};
