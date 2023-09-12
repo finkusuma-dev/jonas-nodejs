@@ -1,7 +1,9 @@
 import { Schema, Model, model, Document, Types, Query } from 'mongoose';
+import slugify from 'slugify';
 
 export interface ITour {
   name: string;
+  slug: string;
   // rating: number;
   price: number;
   duration: number;
@@ -46,6 +48,11 @@ const tourSchema = new Schema<ITour, Model<ITour>>(
     name: {
       type: String,
       required: [true, 'a tour must have a name'],
+      unique: true,
+      trim: true,
+    },
+    slug: {
+      type: String,
       unique: true,
       trim: true,
     },
@@ -108,12 +115,14 @@ const tourSchema = new Schema<ITour, Model<ITour>>(
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
-// const tourSchema = new Schema<ITour>({
-//   // id: Number,
-//   // description: String,
-//   // imageCover: String,
-//   // images: String,
-//   // startDates: String,
+
+tourSchema.pre('save', function (next) {
+  this.slug = slugify(this.name, { lower: true, trim: true });
+  next(); /// if we only have 1 pre middleware like this, we can omit next().
+});
+// tourSchema.post('save', function (doc, next) {
+//   console.log('new doc created', doc);
+//   next(); /// if we only have 1 pre middleware like this, we can omit next().
 // });
 
 // const Tour = model<ITour, TourModelType>('Tour', tourSchema);

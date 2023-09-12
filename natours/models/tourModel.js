@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
+const slugify_1 = __importDefault(require("slugify"));
 // export type TourDocType = Document<unknown, {}, ITour>;
 // export type TourResultDocType = TourDocType &
 //   ITour & {
@@ -23,6 +27,11 @@ const tourSchema = new mongoose_1.Schema({
     name: {
         type: String,
         required: [true, 'a tour must have a name'],
+        unique: true,
+        trim: true,
+    },
+    slug: {
+        type: String,
         unique: true,
         trim: true,
     },
@@ -82,12 +91,13 @@ const tourSchema = new mongoose_1.Schema({
 tourSchema.virtual('durationWeeks').get(function () {
     return this.duration / 7;
 });
-// const tourSchema = new Schema<ITour>({
-//   // id: Number,
-//   // description: String,
-//   // imageCover: String,
-//   // images: String,
-//   // startDates: String,
+tourSchema.pre('save', function (next) {
+    this.slug = (0, slugify_1.default)(this.name, { lower: true, trim: true });
+    next(); /// if we only have 1 pre middleware like this, we can omit next().
+});
+// tourSchema.post('save', function (doc, next) {
+//   console.log('new doc created', doc);
+//   next(); /// if we only have 1 pre middleware like this, we can omit next().
 // });
 // const Tour = model<ITour, TourModelType>('Tour', tourSchema);
 const Tour = (0, mongoose_1.model)('Tour', tourSchema);

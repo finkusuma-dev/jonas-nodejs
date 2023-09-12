@@ -1,6 +1,7 @@
 import { Model, Document, Types } from 'mongoose';
 export interface ITour {
     name: string;
+    slug: string;
     price: number;
     duration: number;
     maxGroupSize: number;
