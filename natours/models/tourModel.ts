@@ -1,7 +1,15 @@
 import { query } from 'express';
-import { Schema, Model, model, Document, Types, Query } from 'mongoose';
+import {
+  Schema,
+  Model,
+  model,
+  Document,
+  Types,
+  Query,
+  Aggregate,
+} from 'mongoose';
 import slugify from 'slugify';
-import { DocType, QueryType } from '../types/mongooseTypes';
+import { QueryType } from '../types/mongooseTypes';
 
 export interface ITour {
   name: string;
@@ -133,7 +141,7 @@ tourSchema.pre('save', function (next) {
 //   next(); /// if we only have 1 pre middleware like this, we can omit next().
 // });
 
-/// Query Middleware
+///// Query Middleware
 /// use regex to define find and findOne method
 tourSchema.pre(/^find/, function (next) {
   (this as QueryType<ITour>).find({
@@ -146,6 +154,20 @@ tourSchema.pre(/^find/, function (next) {
 tourSchema.post(/^find/, function (docs, next) {
   console.log('post find', docs);
 
+  next();
+});
+
+////// Aggregation Middleware
+tourSchema.pre('aggregate', function (next) {
+  console.log('Pre aggregation middleware');
+
+  (this as Aggregate<ITour>).pipeline().unshift({
+    $match: {
+      secret: { $ne: true },
+    },
+  });
+
+  console.log('Aggregate pipeline', this);
   next();
 });
 

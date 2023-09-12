@@ -104,7 +104,7 @@ tourSchema.pre('save', function (next) {
 //   console.log('new doc created', doc);
 //   next(); /// if we only have 1 pre middleware like this, we can omit next().
 // });
-/// Query Middleware
+///// Query Middleware
 /// use regex to define find and findOne method
 tourSchema.pre(/^find/, function (next) {
     this.find({
@@ -114,6 +114,17 @@ tourSchema.pre(/^find/, function (next) {
 });
 tourSchema.post(/^find/, function (docs, next) {
     console.log('post find', docs);
+    next();
+});
+////// Aggregation Middleware
+tourSchema.pre('aggregate', function (next) {
+    console.log('Pre aggregation middleware');
+    this.pipeline().unshift({
+        $match: {
+            secret: { $ne: true },
+        },
+    });
+    console.log('Aggregate pipeline', this);
     next();
 });
 // const Tour = model<ITour, TourModelType>('Tour', tourSchema);
