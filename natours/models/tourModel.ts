@@ -103,7 +103,9 @@ const tourSchema = new Schema<ITour, Model<ITour>>(
       type: Number,
       required: [true, 'a tour must have a price'],
     },
-    priceDiscount: Number,
+    priceDiscount: {
+      type: Number,
+    },
     summary: {
       type: String,
       required: [true, 'a tour must have a summary'],
@@ -135,9 +137,32 @@ const tourSchema = new Schema<ITour, Model<ITour>>(
   },
 );
 
+///// VIRTUAL PROPERTIES
+
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
+
+/// VALIDATION
+tourSchema.path('priceDiscount').validate(function (val) {
+  /// only run before save or create
+  if (this instanceof Document) {
+    return val < this.price;
+  }
+  /// on before update, this refers to Query which we cannot get the document's price
+}, `must be < price`);
+
+/// VALIDATION MIDDLEWARE
+// tourSchema.pre('validate', function (next) {
+//   if (this.priceDiscount && this.price <= this.priceDiscount) {
+//     next(
+//       new Error(
+//         `priceDiscount (${this.priceDiscount}) must be < price (${this.price})`,
+//       ),
+//     );
+//   }
+//   next();
+// });
 
 /// Document Middleware
 tourSchema.pre('save', function (next) {

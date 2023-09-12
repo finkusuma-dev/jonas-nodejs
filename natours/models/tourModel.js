@@ -71,7 +71,9 @@ const tourSchema = new mongoose_1.Schema({
         type: Number,
         required: [true, 'a tour must have a price'],
     },
-    priceDiscount: Number,
+    priceDiscount: {
+        type: Number,
+    },
     summary: {
         type: String,
         required: [true, 'a tour must have a summary'],
@@ -100,9 +102,29 @@ const tourSchema = new mongoose_1.Schema({
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
 });
+///// VIRTUAL PROPERTIES
 tourSchema.virtual('durationWeeks').get(function () {
     return this.duration / 7;
 });
+/// VALIDATION
+tourSchema.path('priceDiscount').validate(function (val) {
+    /// only run before save or create
+    if (this instanceof mongoose_1.Document) {
+        return val < this.price;
+    }
+    /// on before update, this refers to Query which we cannot get the document's price
+}, `must be < price`);
+/// VALIDATION MIDDLEWARE
+// tourSchema.pre('validate', function (next) {
+//   if (this.priceDiscount && this.price <= this.priceDiscount) {
+//     next(
+//       new Error(
+//         `priceDiscount (${this.priceDiscount}) must be < price (${this.price})`,
+//       ),
+//     );
+//   }
+//   next();
+// });
 /// Document Middleware
 tourSchema.pre('save', function (next) {
     this.slug = (0, slugify_1.default)(this.name, { lower: true, trim: true });
