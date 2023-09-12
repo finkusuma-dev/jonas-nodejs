@@ -5,7 +5,7 @@ get http://127.0.0.1:3000
 
 ##### GET ALL TOURS
 ### Test select fields
-get http://127.0.0.1:3000/api/v1/tours?fields=-summary,-description
+get http://127.0.0.1:3000/api/v1/tours?fields=-summary,-description&limit=20
 
 ### Test pagination
 get http://127.0.0.1:3000/api/v1/tours?fields=name&page=2
@@ -20,34 +20,34 @@ get http://127.0.0.1:3000/api/v1/tours?maxGroupSize=gt:14,lt:21&duration=gte:7,l
 get http://127.0.0.1:3000/api/v1/tours/top-5-cheap
 
 ##### GET 1 TOUR
-get http://127.0.0.1:3000/api/v1/tours/5c88fa8cf4afda39709c296c
+get http://127.0.0.1:3000/api/v1/tours/5c88fa8cf4afda39709c295d
 
 ##### CREATE A NEW TOUR
 POST http://127.0.0.1:3000/api/v1/tours
 Content-Type: application/json
 
 {
-  "name": "The Forest Hiker",
-  "duration": 5,
-  "maxGroupSize": 25,
+  "name": "The New Tour 2",
+  "duration": 2,
+  "maxGroupSize": 5,
   "difficulty": "easy",
   "ratingsAverage": 4.7,
   "ratingsQuantity": 37,
-  "price": 397,
+  "price": 100,
   "maxGrupSize": 6,
   "summary": "Breathtaking hike through the Canadian Banff National Park",
-  "description": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\nLorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  "imageCover": "tour-1-cover.jpg",
-  "images": ["tour-1-1.jpg", "tour-1-2.jpg", "tour-1-3.jpg"],
+  //"description": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\nLorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+  //"imageCover": "tour-1-cover.jpg",
+  //"images": ["tour-1-1.jpg", "tour-1-2.jpg", "tour-1-3.jpg"],
   "startDates": ["2021-04-25,10:00", "2021-07-20,10:00", "2021-10-05,10:00"]
 }
 
 ##### UPDATE TOUR
-PATCH  http://127.0.0.1:3000/api/v1/tours/64f589405d0768bb98618236
+PATCH  http://127.0.0.1:3000/api/v1/tours/5c88fa8cf4afda39709c295d
 Content-Type: application/json
 
 {  
-  "startDates": ["2021-04-25,10:00", "2021-07-20,10:00", "2021-10-05,10:00"]
+  "secret" : false
 }
 
 ##### DELETE TOUR
