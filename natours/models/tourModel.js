@@ -84,6 +84,10 @@ const tourSchema = new mongoose_1.Schema({
         default: Date.now(),
     },
     startDates: [Date],
+    secret: {
+        type: Boolean,
+        default: false,
+    },
 }, {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
@@ -91,6 +95,7 @@ const tourSchema = new mongoose_1.Schema({
 tourSchema.virtual('durationWeeks').get(function () {
     return this.duration / 7;
 });
+/// Document Middleware
 tourSchema.pre('save', function (next) {
     this.slug = (0, slugify_1.default)(this.name, { lower: true, trim: true });
     next(); /// if we only have 1 pre middleware like this, we can omit next().
@@ -99,6 +104,18 @@ tourSchema.pre('save', function (next) {
 //   console.log('new doc created', doc);
 //   next(); /// if we only have 1 pre middleware like this, we can omit next().
 // });
+/// Query Middleware
+/// use regex to define find and findOne method
+tourSchema.pre(/^find/, function (next) {
+    this.find({
+        secret: { $ne: true },
+    });
+    next();
+});
+tourSchema.post(/^find/, function (docs, next) {
+    console.log('post find', docs);
+    next();
+});
 // const Tour = model<ITour, TourModelType>('Tour', tourSchema);
 const Tour = (0, mongoose_1.model)('Tour', tourSchema);
 // module.exports = Tour;

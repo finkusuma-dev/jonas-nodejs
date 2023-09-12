@@ -1,5 +1,7 @@
+import { query } from 'express';
 import { Schema, Model, model, Document, Types, Query } from 'mongoose';
 import slugify from 'slugify';
+import { DocType, QueryType } from '../types/mongooseTypes';
 
 export interface ITour {
   name: string;
@@ -18,6 +20,7 @@ export interface ITour {
   images: Types.Array<string> | undefined;
   createdAt: Date;
   startDates: Types.Array<Date> | undefined;
+  secret: boolean;
 }
 
 type TourModelType = Model<ITour>;
@@ -105,6 +108,10 @@ const tourSchema = new Schema<ITour, Model<ITour>>(
       default: Date.now(),
     },
     startDates: [Date],
+    secret: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     toJSON: { virtuals: true },
@@ -116,6 +123,7 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 
+/// Document Middleware
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true, trim: true });
   next(); /// if we only have 1 pre middleware like this, we can omit next().
@@ -124,6 +132,22 @@ tourSchema.pre('save', function (next) {
 //   console.log('new doc created', doc);
 //   next(); /// if we only have 1 pre middleware like this, we can omit next().
 // });
+
+/// Query Middleware
+/// use regex to define find and findOne method
+tourSchema.pre(/^find/, function (next) {
+  (this as QueryType<ITour>).find({
+    secret: { $ne: true },
+  });
+
+  next();
+});
+
+tourSchema.post(/^find/, function (docs, next) {
+  console.log('post find', docs);
+
+  next();
+});
 
 // const Tour = model<ITour, TourModelType>('Tour', tourSchema);
 const Tour = model<ITour>('Tour', tourSchema);

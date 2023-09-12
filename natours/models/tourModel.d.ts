@@ -15,6 +15,7 @@ export interface ITour {
     images: Types.Array<string> | undefined;
     createdAt: Date;
     startDates: Types.Array<Date> | undefined;
+    secret: boolean;
 }
 declare const Tour: Model<ITour, {}, {}, {}, Document<unknown, {}, ITour> & ITour & {
     _id: Types.ObjectId;
