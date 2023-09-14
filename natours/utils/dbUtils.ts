@@ -14,10 +14,13 @@ export async function connectDb(isTest: boolean = false) {
   }
 
   // console.log('database', dbConnection);
-  return mongoose
-    .connect(dbConnection!, {})
-    .then(() => console.log('Db connected'))
-    .catch((err) => console.log('connected failed', err));
+
+  const m = mongoose.connect(dbConnection!, {});
+  m.then(() => console.log('Db connected')).catch((err) =>
+    console.log('connected failed', err),
+  );
+
+  return m;
 }
 
 export async function importData(jsonFilepath: string): Promise<any> {

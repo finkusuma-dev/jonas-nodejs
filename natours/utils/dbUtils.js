@@ -51,10 +51,9 @@ function connectDb(isTest = false) {
             console.log(`Connect to DB: ${dbConnection}`);
         }
         // console.log('database', dbConnection);
-        return mongoose_1.default
-            .connect(dbConnection, {})
-            .then(() => console.log('Db connected'))
-            .catch((err) => console.log('connected failed', err));
+        const m = mongoose_1.default.connect(dbConnection, {});
+        m.then(() => console.log('Db connected')).catch((err) => console.log('connected failed', err));
+        return m;
     });
 }
 exports.connectDb = connectDb;
