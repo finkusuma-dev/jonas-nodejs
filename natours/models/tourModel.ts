@@ -169,6 +169,7 @@ tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true, trim: true });
   next(); /// if we only have 1 pre middleware like this, we can omit next().
 });
+
 // tourSchema.post('save', function (doc, next) {
 //   console.log('new doc created', doc);
 //   next(); /// if we only have 1 pre middleware like this, we can omit next().
@@ -185,7 +186,7 @@ tourSchema.pre(/^find/, function (next) {
 });
 
 tourSchema.post(/^find/, function (docs, next) {
-  console.log('post find', docs);
+  // console.log('post find', docs);
 
   next();
 });
@@ -200,7 +201,7 @@ tourSchema.pre('aggregate', function (next) {
     },
   });
 
-  console.log('Aggregate pipeline', this);
+  // console.log('Aggregate pipeline', this);
   next();
 });
 
