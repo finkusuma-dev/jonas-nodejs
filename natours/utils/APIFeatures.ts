@@ -1,6 +1,7 @@
 import QueryString from 'qs';
 import { FilterQuery } from 'mongoose';
 import { QueryType } from '../types/mongooseTypes';
+import { consoleLog } from './myLog';
 
 // interface APIFeaturesType<T> {
 //   // model: ModelType<T>;
@@ -40,14 +41,14 @@ export default class APIFeatures<T> {
 
     /// Remove keys from queryString that are not in modelProps, i.e: sort, fields, page, & limit
     for (const [key] of Object.entries(this.queryString)) {
-      // console.log(`key: ${key}, value: ${value}`);
+      // consoleLog(`key: ${key}, value: ${value}`);
 
       if (!this.modelProps.includes(key)) {
         /// delete prop from object
         delete queryStr[key];
       }
     }
-    console.log('searchParams:', queryStr);
+    consoleLog('searchParams:', queryStr);
 
     /// Create advance filtering from queryString
     /// i.e:
@@ -90,19 +91,19 @@ export default class APIFeatures<T> {
         ///
         advFilters[key] = numberFilters;
 
-        console.log('filtersMap.set (number):', key);
+        consoleLog('filtersMap.set (number):', key);
       } else if (typeof value === 'string' && value !== '') {
         /// normal filtering, i.e: difficult= easy
         ///   i.e: Object { difficult : easy }
         ///
 
         advFilters[key] = value;
-        console.log('filtersMap.set (normal):', key, value);
+        consoleLog('filtersMap.set (normal):', key, value);
       }
     }
 
     /// advFilters = Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
-    console.log('advFilters', advFilters);
+    consoleLog('advFilters', advFilters);
 
     /// create query and set filters
     this.query = this.query.find(advFilters as FilterQuery<T>);
@@ -121,7 +122,7 @@ export default class APIFeatures<T> {
     if (this.queryString.sort) {
       const sortBy = String(this.queryString.sort).split(',').join(' ');
       // const sort = String(req.query.sort).replace(/,/g, ' ');
-      console.log('sort: ', sortBy);
+      consoleLog('sort: ', sortBy);
 
       ///sort=name,duration
       this.query = this.query.sort(sortBy);
@@ -150,7 +151,7 @@ export default class APIFeatures<T> {
       ) {
         fields = fields + ' -__v';
       }
-      console.log('fields:', fields);
+      consoleLog('fields:', fields);
       this.query = this.query.select<T>(fields) as QueryType<T>;
     } else {
       this.query = this.query.select<T>('-__v') as QueryType<T>;
@@ -164,7 +165,7 @@ export default class APIFeatures<T> {
     const limit = Number(this.queryString.limit) || 5;
     const skipBy = (page - 1) * limit;
     this.query = this.query.limit(limit).skip(skipBy);
-    console.log(`limit: ${limit}, skip: ${skipBy}`);
+    consoleLog(`limit: ${limit}, skip: ${skipBy}`);
 
     // if (queryStr.page) {
     //   const documentCount = await Tour.countDocuments();
