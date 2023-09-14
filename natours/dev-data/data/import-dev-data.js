@@ -35,40 +35,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// import mongoose from "mongoose";
-const fs = __importStar(require("fs"));
-const tourModel_1 = __importDefault(require("../../models/tourModel"));
-const mongoose_1 = __importDefault(require("mongoose"));
+const dbUtils = __importStar(require("../../utils/dbUtils"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config({ path: './config.env' }); ///load custom env file
-console.log('database', process.env.DATABASE);
-mongoose_1.default
-    .connect(process.env.DATABASE, {})
-    .then(() => console.log('Db connected'))
-    .catch((err) => console.log('connected failed', err));
-function importData() {
-    fs.readFile(`${__dirname}/tours.json`, 'utf-8', (err, data) => __awaiter(this, void 0, void 0, function* () {
-        // console.log('data', String(data));
-        try {
-            const dataTours = JSON.parse(data);
-            // console.log(dataTours);
-            if (dataTours.length > 0) {
-                /// delete all tour collections
-                yield tourModel_1.default.deleteMany({}).then((result) => console.log('Delete tours success', result));
-                yield tourModel_1.default.create(dataTours).then((result) => console.log('Insert tours success, insert count: ', result.length));
-            }
-        }
-        catch (err) {
-            console.log('error import-dev-data:tours', err);
-        }
-    }));
+//console.log('database', process.env.DATABASE);
+function doImport() {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield dbUtils.connectDb();
+        const jsonFile = `${__dirname}/tours.json`;
+        console.log('Import jsonFile: ', jsonFile);
+        yield dbUtils.clearData();
+        yield dbUtils.importData(jsonFile);
+        yield dbUtils.clearData();
+        process.exit();
+    });
 }
-importData();
-// console.log(process.argv);
-// if (process.argv.includes('--delete')) {
-//   console.log('delete data');
-// }
-// if (process.argv.includes('--import')) {
-//   console.log('import data');
-// }
-process.exit();
+doImport();
