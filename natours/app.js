@@ -21,4 +21,4 @@ if (process.env.NODE_ENV === 'development') {
 }
 app.use('/api/v1/tours', tourRouter_1.default);
 app.use('/api/v1/users', userRouter);
-module.exports = app;
+exports.default = app;

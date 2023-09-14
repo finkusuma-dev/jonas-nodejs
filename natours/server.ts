@@ -19,8 +19,7 @@ dotenv.config({ path: './config.env' }); ///load custom env file
 
 dbUtils.connectDb();
 
-const app = require('./app');
-
+import app from './app';
 // console.log('process.env', process.env);
 // console.log('process.env.PORT', process.env.PORT);
 
