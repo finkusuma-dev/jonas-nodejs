@@ -146,6 +146,7 @@ describe('Testing Tours CRUD', () => {
     });
 
     test('FAILED to add new tour (name<10 & name>30) ', async () => {
+      expect.assertions(2);
       try {
         await axios.post(URL + '/tours', {
           name: '123456789',
@@ -157,9 +158,10 @@ describe('Testing Tours CRUD', () => {
         });
         // console.log('axios res', res);
       } catch (err: any) {
-        // console.log('axios error:', err);
-        // console.log('axios error.message:', (err as AxiosError).message);
-        expect((err as AxiosError).message).toMatch('400');
+        // console.log('axios error.message:', (err as AxiosError).response);
+        expect(((err as AxiosError).response!.data as any).message).toMatch(
+          'name: must be >= 10 chars long',
+        );
       }
       try {
         await axios.post(URL + '/tours', {
@@ -171,10 +173,14 @@ describe('Testing Tours CRUD', () => {
           summary: '-',
         });
       } catch (err) {
-        expect((err as AxiosError).message).toMatch('400');
+        // expect((err as AxiosError).message).toMatch('400');
+        expect(((err as AxiosError).response!.data as any).message).toMatch(
+          'name: must be <= 30 chars long',
+        );
       }
     });
     test('FAILED to add new tour (priceDiscount >= price)', async () => {
+      expect.assertions(1);
       try {
         const res = await axios.post(URL + '/tours', {
           name: '123456789',
@@ -186,8 +192,10 @@ describe('Testing Tours CRUD', () => {
           summary: '-',
         } as ITour);
       } catch (err) {
-        // expect((err as AxiosError).message).toMatch('400');
-        expect((err as AxiosError).response!.status).toBe(400);
+        // expect((err as AxiosError).response!.status).toBe(400);
+        expect(((err as AxiosError).response!.data as any).message).toMatch(
+          'priceDiscount: must be < price',
+        );
       }
     });
 
@@ -196,16 +204,20 @@ describe('Testing Tours CRUD', () => {
         difficulty: 'difficult',
         price: 500,
       } as ITour);
-      // expect(res.data.results).toBe(2);
-      // const res2 = await axios.get(URL + '/tours');
-      // console.log('res.data.data',res.data.data)
+
       expect(res.data.data.tour.difficulty).toMatch('difficult');
       expect(res.data.data.tour.price).toBe(500);
     });
     test('Delete tour', async () => {
+      expect.assertions(1);
       const res = await axios.delete(URL + `/tours/${idForUpdateDelete}`);
-      const res2 = await axios.get(URL + '/tours');
-      expect(res2.data.results).toBe(0);
+      if (res) {
+        try {
+          const res2 = await axios.get(URL + '/tours/${idForUpdateDelete}');
+        } catch (error) {
+          expect((error as AxiosError).response?.status).toBe(400);
+        }
+      }
     });
     test('Add new secret tour', async () => {
       const res = await axios.post(URL + '/tours', {
@@ -217,8 +229,13 @@ describe('Testing Tours CRUD', () => {
         secret: true,
         summary: '-',
       } as ITour);
+
+      /// post response data.results has secret tour in it
       expect(res.data.results).toBe(1);
+
       const res2 = await axios.get(URL + '/tours');
+
+      /// get tours response data.results doesn't have secret tour in it, because of pre Query (/^find/) middleware
       expect(res2.data.results).toBe(0);
     });
   });
@@ -227,7 +244,7 @@ describe('Testing Tours CRUD', () => {
     beforeAll(() => {
       return (async function () {
         await dbUtils.clearData();
-        return dbUtils.importData(dataTours);
+        return dbUtils.importData(dataTours); /// import 6 tours
       })();
     });
 
@@ -276,10 +293,13 @@ describe('Testing Tours CRUD', () => {
         return (async function () {
           //console.log('Prepare db for sorting...');
           await dbUtils.clearData();
-          let dataSorting = [...dataTours];
-          dataSorting.splice(3, 3);
+
+          ///Only import the first 3 tours from dataTours
+          let data = [...dataTours];
+          data.splice(3, 3);
+
           // console.log('dataSorting', dataSorting);
-          await dbUtils.importData(dataSorting);
+          await dbUtils.importData(data);
         })();
       });
 
