@@ -39,11 +39,12 @@ exports.clearData = exports.importFile = exports.importData = exports.connectDb 
 const mongoose_1 = __importDefault(require("mongoose"));
 const fs = __importStar(require("fs"));
 const tourModel_1 = __importDefault(require("../models/tourModel"));
-function connectDb(isTest = false) {
+function connectDb() {
     return __awaiter(this, void 0, void 0, function* () {
         // dotenv.config({ path: './config.env' }); ///load custom env file
         let dbConnection = process.env.DATABASE;
-        if (isTest || process.argv.includes('--test')) {
+        // if (isTest || process.argv.includes('--test')) {
+        if (process.env.NODE_ENV === 'test') {
             dbConnection = process.env.DATABASE_TEST;
             console.log(`Connect to TEST DB: ${dbConnection}`);
         }

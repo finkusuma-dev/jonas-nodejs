@@ -2,11 +2,12 @@ import mongoose from 'mongoose';
 import * as fs from 'fs';
 import Tour, { ITour } from '../models/tourModel';
 
-export async function connectDb(isTest: boolean = false) {
+export async function connectDb() {
   // dotenv.config({ path: './config.env' }); ///load custom env file
 
   let dbConnection = process.env.DATABASE;
-  if (isTest || process.argv.includes('--test')) {
+  // if (isTest || process.argv.includes('--test')) {
+  if (process.env.NODE_ENV === 'test') {
     dbConnection = process.env.DATABASE_TEST;
     console.log(`Connect to TEST DB: ${dbConnection}`);
   } else {
