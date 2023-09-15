@@ -34,7 +34,6 @@ const dbUtils = __importStar(require("./utils/dbUtils"));
 // const tourModel = require('./models/tourModel');
 // dotenv.config(); //load .env (default env file)
 dotenv_1.default.config({ path: './config.env' }); ///load custom env file
-const app_1 = __importDefault(require("./app"));
 // console.log('database', process.env.DATABASE);
 // mongoose
 //   .connect(process.env.DATABASE!, {})
@@ -42,6 +41,7 @@ const app_1 = __importDefault(require("./app"));
 //   .catch((err) => console.log('connected failed', err));
 // tourModel.init();
 dbUtils.connectDb();
+const app_1 = __importDefault(require("./app"));
 // console.log('process.env', process.env);
 // console.log('process.env.PORT', process.env.PORT);
 const port = process.env.PORT;
