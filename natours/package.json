@@ -7,8 +7,7 @@
     "node": ">=9.0.0"
   },
   "scripts": {
-    "test": "jest",
-    "test-watch": "jest --watch",
+    "test": "jest --verbose",
     "compile": "tsc",
     "compile-watch": "tsc --watch",
     "nodemon:dev": "nodemon server.js",
