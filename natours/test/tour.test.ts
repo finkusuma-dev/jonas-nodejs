@@ -16,6 +16,13 @@ const dataTours = [
     difficulty: 'easy',
     price: 700,
     summary: '-',
+    ratingsQuantity: 10,
+    ratingsAverage: 5,
+    startDates: [
+      '2021-06-19T09:00:00.000Z',
+      '2021-07-20T09:00:00.000Z',
+      '2020-08-18T09:00:00.000Z',
+    ],
   },
   {
     name: 'dddddddddd',
@@ -24,6 +31,13 @@ const dataTours = [
     difficulty: 'difficult',
     price: 100,
     summary: '-',
+    ratingsQuantity: 5,
+    ratingsAverage: 4,
+    startDates: [
+      '2021-06-19T09:00:00.000Z',
+      '2020-07-20T09:00:00.000Z',
+      '2020-08-18T09:00:00.000Z',
+    ],
   },
   {
     name: 'cccccccccc',
@@ -110,7 +124,7 @@ describe('Testing Tours CRUD', () => {
   describe('Testing add, get a tour, update, and delete', () => {
     let idForUpdateDelete = 0;
 
-    test('Add new tour. Has slug', async () => {
+    test('Add new tour. Has slug & durationWeek (virtual prop)', async () => {
       const res = await axios.post(URL + '/tours', {
         name: 'aaaaaaaaaa',
         duration: 4,
@@ -123,6 +137,7 @@ describe('Testing Tours CRUD', () => {
       idForUpdateDelete = res.data.data.tour['_id'];
       expect(res.data.results).toBe(1);
       expect(res.data.data.tour).toHaveProperty('slug');
+      expect(res.data.data.tour).toHaveProperty('durationWeeks');
     });
 
     test('Get a tour', async () => {
@@ -230,11 +245,11 @@ describe('Testing Tours CRUD', () => {
     });
 
     describe('Filtering', () => {
-      test('Applying filter (difficulty=easy) has 2 results', async () => {
+      test('Apply filter (difficulty=easy) has 2 results', async () => {
         const res = await axios.get(URL + '/tours?difficulty=easy');
         expect(res.data.results).toBe(2);
       });
-      test('Applying filter (price=gt:100,lt:700) has 3 results', async () => {
+      test('Apply filter (price=gt:100,lt:700) has 3 results', async () => {
         const res = await axios.get(URL + '/tours?price=gt:100,lt:700');
         expect(res.data.results).toBe(3);
       });
@@ -259,7 +274,7 @@ describe('Testing Tours CRUD', () => {
       /// Only use 3 tours data for sorting test
       beforeAll(() => {
         return (async function () {
-          console.log('Prepare db for sorting...');
+          //console.log('Prepare db for sorting...');
           await dbUtils.clearData();
           let dataSorting = [...dataTours];
           dataSorting.splice(3, 3);
@@ -268,7 +283,7 @@ describe('Testing Tours CRUD', () => {
         })();
       });
 
-      test('Applying (sort=name) sort the names in ascending order', async () => {
+      test('Apply (sort=name) sort the names in ascending order', async () => {
         const res = await axios.get(URL + '/tours?fields=name&sort=name');
         const sortedName = (res.data.data.tours as Array<ITour>).map(
           (el) => el.name,
@@ -276,7 +291,7 @@ describe('Testing Tours CRUD', () => {
         // console.log('sortedName', sortedName);
         expect(sortedName).toEqual(['aaaaaaaaaa', 'cccccccccc', 'dddddddddd']);
       });
-      test('Applying (sort=-price) sort the prices in descending order', async () => {
+      test('Apply (sort=-price) sort the prices in descending order', async () => {
         const res = await axios.get(
           URL + '/tours?fields=name,price&sort=-price',
         );
@@ -286,6 +301,30 @@ describe('Testing Tours CRUD', () => {
         // console.log('sortedPrice', sortedPrice);
         expect(sortedPrice).toEqual([700, 300, 100]);
       });
+    });
+  });
+  describe('Testing Other Tours Routes', () => {
+    beforeAll(() => {
+      return (async () => {
+        await dbUtils.clearData();
+        let dataSorting = [...dataTours];
+        dataSorting.splice(3, 3);
+        // console.log('dataSorting', dataSorting);
+        await dbUtils.importData(dataSorting);
+      })();
+    });
+
+    test('Route "/tours/stats" to have 3 results', async () => {
+      const res = await axios.get(URL + '/tours/stats');
+      // console.log('tours stats', res.data.data.tours);
+      // console.log('sortedPrice', sortedPrice);
+      expect(res.data.data.tours.length).toEqual(3);
+    });
+    test('Route "/tours/monthly-plan?year=2021" to have 2 results', async () => {
+      const res = await axios.get(URL + '/tours/monthly-plan?year=2021');
+      // console.log('tours montly-plan', res.data.data.tours);
+      // console.log('sortedPrice', sortedPrice);
+      expect(res.data.data.tours.length).toEqual(2);
     });
   });
 });
