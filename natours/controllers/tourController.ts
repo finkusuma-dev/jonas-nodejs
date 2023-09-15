@@ -95,7 +95,7 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
 
 export const getTour = async (req: E.Request, res: E.Response) => {
   const { id } = req.params;
-  console.log(id, typeof id);
+  // console.log(id, typeof id);
 
   // const tour = tours.find((el) => el.id === id);
   try {
