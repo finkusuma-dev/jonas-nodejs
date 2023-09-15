@@ -4,7 +4,7 @@ import * as dbUtils from '../utils/dbUtils';
 import mongoose from 'mongoose';
 import app from '../app';
 import { Server } from 'http';
-import { ITour } from '../models/tourModel';
+// import { ITour } from '../models/tourModel';/
 // import type Server from '@types/express';
 
 const HTTP_PORT = 3100;
@@ -17,7 +17,7 @@ beforeAll(() => {
     const jsonFile = `${__dirname}/../dev-data/data/tours.json`;
     console.log('jsonFile', jsonFile);
     await dbUtils.clearData();
-    await dbUtils.importData(jsonFile);
+    await dbUtils.importFile(jsonFile);
 
     // console.log('process.env', process.env);
     // console.log('process.env.PORT', process.env.PORT);

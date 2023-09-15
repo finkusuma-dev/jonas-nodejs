@@ -45,7 +45,7 @@ function doImport() {
         const jsonFile = `${__dirname}/tours.json`;
         console.log('Import jsonFile: ', jsonFile);
         yield dbUtils.clearData();
-        yield dbUtils.importData(jsonFile);
+        yield dbUtils.importFile(jsonFile);
         yield dbUtils.clearData();
         process.exit();
     });

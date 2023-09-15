@@ -11,7 +11,7 @@ async function doImport() {
   const jsonFile = `${__dirname}/tours.json`;
   console.log('Import jsonFile: ', jsonFile);
   await dbUtils.clearData();
-  await dbUtils.importData(jsonFile);
+  await dbUtils.importFile(jsonFile);
   await dbUtils.clearData();
 
   process.exit();

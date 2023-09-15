@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clearData = exports.importData = exports.connectDb = void 0;
+exports.clearData = exports.importFile = exports.importData = exports.connectDb = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const fs = __importStar(require("fs"));
 const tourModel_1 = __importDefault(require("../models/tourModel"));
@@ -57,32 +57,45 @@ function connectDb(isTest = false) {
     });
 }
 exports.connectDb = connectDb;
-function importData(jsonFilepath) {
+function importData(data) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // console.log('importData', data);
+        // if (dataTours.length > 0) {
+        return tourModel_1.default.create(data).then((result) => {
+            const msg = 'Insert tours success, insert count: ' + result.length;
+            console.log(msg);
+        });
+    });
+}
+exports.importData = importData;
+function importFile(jsonFilepath) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
             fs.readFile(jsonFilepath, 'utf-8', (err, data) => __awaiter(this, void 0, void 0, function* () {
-                // console.log('import data', String(data));
-                try {
-                    const dataTours = JSON.parse(data);
-                    // console.log(dataTours);
-                    if (dataTours.length > 0) {
-                        /// delete all tour collections
-                        yield tourModel_1.default.create(dataTours).then((result) => {
-                            const msg = 'Insert tours success, insert count: ' + result.length;
-                            console.log(msg);
-                            resolve(msg);
-                        });
-                    }
-                }
-                catch (err) {
-                    console.log('error import-dev-data:tours', err);
+                // console.log('import data', String(data));/
+                if (err) {
                     reject(err);
+                }
+                const parsedData = JSON.parse(data);
+                if (parsedData) {
+                    yield importData(parsedData)
+                        .then(() => {
+                        // console.log('import file success')
+                        resolve(true);
+                    })
+                        .catch((err) => {
+                        console.log('Error importing tour data', err);
+                        reject(err);
+                    });
+                }
+                else {
+                    reject('Importing tour data canceled, data is empty');
                 }
             }));
         });
     });
 }
-exports.importData = importData;
+exports.importFile = importFile;
 function clearData() {
     return __awaiter(this, void 0, void 0, function* () {
         return tourModel_1.default.deleteMany({}).then((result) => console.log('Delete tours success', result));

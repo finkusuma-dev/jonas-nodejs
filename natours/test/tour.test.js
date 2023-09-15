@@ -40,8 +40,11 @@ const axios_1 = __importDefault(require("axios"));
 const dbUtils = __importStar(require("../utils/dbUtils"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const app_1 = __importDefault(require("../app"));
+// import { ITour } from '../models/tourModel';/
 // import type Server from '@types/express';
-let server;
+const HTTP_PORT = 3100;
+const URL = `http://127.0.0.1:${HTTP_PORT}/api/v1`;
+let serverHandle;
 beforeAll(() => {
     function init() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -49,12 +52,11 @@ beforeAll(() => {
             const jsonFile = `${__dirname}/../dev-data/data/tours.json`;
             console.log('jsonFile', jsonFile);
             yield dbUtils.clearData();
-            yield dbUtils.importData(jsonFile);
+            yield dbUtils.importFile(jsonFile);
             // console.log('process.env', process.env);
             // console.log('process.env.PORT', process.env.PORT);
-            const port = process.env.PORT;
-            server = app_1.default.listen(port, () => {
-                console.log(`server listening port ${port}`);
+            serverHandle = app_1.default.listen(HTTP_PORT, () => {
+                console.log(`server listening port ${HTTP_PORT}`);
             });
         });
     }
@@ -68,7 +70,7 @@ afterAll(() => {
             try {
                 yield dbUtils.clearData();
                 yield mongoose_1.default.disconnect();
-                server.close();
+                serverHandle.close();
                 console.log('clear & disconnect');
             }
             catch (err) {
@@ -77,18 +79,45 @@ afterAll(() => {
         });
     })();
 });
-describe('Tour Test', () => {
-    test('GET all tours with 9 data', () => __awaiter(void 0, void 0, void 0, function* () {
-        const res = yield axios_1.default.get('http://127.0.0.1:3000/api/v1/tours?limit=20');
+describe('Testing Tours', () => {
+    test('GET all 9 data', () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield axios_1.default.get(URL + '/tours?limit=20');
         expect(res.status).toBe(200);
-        // console.log('response data.data', data.data);
+        expect(res.data).toHaveProperty('results');
         expect(res.data.results).toBe(9);
     }));
     test('GET with Pagination', () => __awaiter(void 0, void 0, void 0, function* () {
-        // const data = await ;
-        // expect(data.status).toBe(200);
-        // console.log('response data.data', data.data);
-        const res = axios_1.default.get('http://127.0.0.1:3000/api/v1/tours');
-        expect(res).resolves.toHaveProperty('data.results', 9);
+        const res = yield axios_1.default.get(URL + '/tours');
+        expect(res.data).toHaveProperty('results');
+        expect(res.data.results).toBe(5);
+        const res2 = yield axios_1.default.get(URL + '/tours?page=2');
+        expect(res2.data).toHaveProperty('results');
+        expect(res2.data.results).toBe(4);
+    }));
+    test('GET with querystring: fields=name,price', () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield axios_1.default.get(URL + '/tours?fields=name,price&limit=1');
+        expect(res.data.data).toHaveProperty('tours');
+        expect(res.data).toHaveProperty('results');
+        expect(res.data.results).toBe(1);
+        expect(res.data.data.tours[0]).toHaveProperty('name');
+        expect(res.data.data.tours[0]).toHaveProperty('price');
+    }));
+    test('GET with querystring: fields=-name,-price', () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield axios_1.default.get(URL + '/tours?fields=-name,-price&limit=1');
+        expect(res.data.data).toHaveProperty('tours');
+        expect(res.data).toHaveProperty('results');
+        expect(res.data.results).toBe(1);
+        expect(res.data.data.tours[0]).not.toHaveProperty('name');
+        expect(res.data.data.tours[0]).not.toHaveProperty('price');
+    }));
+    test('GET with querystring: fields=name&sort=name', () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield axios_1.default.get(URL + '/tours?fields=name&sort=name');
+        expect(res.data.data).toHaveProperty('tours');
+        expect(res.data).toHaveProperty('results');
+        expect(res.data.results).toBeGreaterThanOrEqual(1);
+        expect(res.data.data.tours[0]).toHaveProperty('name');
+        expect(res.data.data.tours[1]).toHaveProperty('name');
+        // expect(res.data.data.tours[0].name).toHaveProperty('name');
+        ///TODO: need to figure how to make sure data is sorted
     }));
 });
