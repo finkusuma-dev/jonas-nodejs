@@ -143,18 +143,18 @@ tourSchema.pre(/^find/, function (next) {
     next();
 });
 tourSchema.post(/^find/, function (docs, next) {
-    console.log('post find', docs);
+    // console.log('post find', docs);
     next();
 });
 ////// Aggregation Middleware
 tourSchema.pre('aggregate', function (next) {
-    console.log('Pre aggregation middleware');
+    // console.log('Pre aggregation middleware');
     this.pipeline().unshift({
         $match: {
             secret: { $ne: true },
         },
     });
-    console.log('Aggregate pipeline', this);
+    // console.log('Aggregate pipeline', this);
     next();
 });
 // const Tour = model<ITour, TourModelType>('Tour', tourSchema);

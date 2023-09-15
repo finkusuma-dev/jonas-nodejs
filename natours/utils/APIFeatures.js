@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const myLog_1 = require("./myLog");
 // interface APIFeaturesType<T> {
 //   // model: ModelType<T>;
 //   numberProps: Array<string>;
@@ -23,13 +24,13 @@ class APIFeatures {
         const queryStr = Object.assign({}, this.queryString);
         /// Remove keys from queryString that are not in modelProps, i.e: sort, fields, page, & limit
         for (const [key] of Object.entries(this.queryString)) {
-            // console.log(`key: ${key}, value: ${value}`);
+            // consoleLog(`key: ${key}, value: ${value}`);
             if (!this.modelProps.includes(key)) {
                 /// delete prop from object
                 delete queryStr[key];
             }
         }
-        console.log('searchParams:', queryStr);
+        (0, myLog_1.consoleLog)('searchParams:', queryStr);
         /// Create advance filtering from queryString
         /// i.e:
         /// queryString = duration=gte:5,lte:9&price=lte:1000&difficuly=easy
@@ -62,18 +63,18 @@ class APIFeatures {
                 /// i.e: Object { duration : { '$gte': 5, '$lte': 9 }, price : { '$lte': 1000 } }
                 ///
                 advFilters[key] = numberFilters;
-                console.log('filtersMap.set (number):', key);
+                (0, myLog_1.consoleLog)('filtersMap.set (number):', key);
             }
             else if (typeof value === 'string' && value !== '') {
                 /// normal filtering, i.e: difficult= easy
                 ///   i.e: Object { difficult : easy }
                 ///
                 advFilters[key] = value;
-                console.log('filtersMap.set (normal):', key, value);
+                (0, myLog_1.consoleLog)('filtersMap.set (normal):', key, value);
             }
         }
         /// advFilters = Object { duration: { '$gte': 5, '$lte': 9 }, price: { '$lte': 1000 }, 'difficult': 'easy' }
-        console.log('advFilters', advFilters);
+        (0, myLog_1.consoleLog)('advFilters', advFilters);
         /// create query and set filters
         this.query = this.query.find(advFilters);
         return this;
@@ -88,7 +89,7 @@ class APIFeatures {
         if (this.queryString.sort) {
             const sortBy = String(this.queryString.sort).split(',').join(' ');
             // const sort = String(req.query.sort).replace(/,/g, ' ');
-            console.log('sort: ', sortBy);
+            (0, myLog_1.consoleLog)('sort: ', sortBy);
             ///sort=name,duration
             this.query = this.query.sort(sortBy);
         }
@@ -112,7 +113,7 @@ class APIFeatures {
                 .some((el) => el[0] === '-')) {
                 fields = fields + ' -__v';
             }
-            console.log('fields:', fields);
+            (0, myLog_1.consoleLog)('fields:', fields);
             this.query = this.query.select(fields);
         }
         else {
@@ -125,7 +126,7 @@ class APIFeatures {
         const limit = Number(this.queryString.limit) || 5;
         const skipBy = (page - 1) * limit;
         this.query = this.query.limit(limit).skip(skipBy);
-        console.log(`limit: ${limit}, skip: ${skipBy}`);
+        (0, myLog_1.consoleLog)(`limit: ${limit}, skip: ${skipBy}`);
         // if (queryStr.page) {
         //   const documentCount = await Tour.countDocuments();
         //   if (skipBy >= documentCount) throw new Error('Page is not found');

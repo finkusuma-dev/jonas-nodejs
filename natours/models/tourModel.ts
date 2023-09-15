@@ -193,7 +193,7 @@ tourSchema.post(/^find/, function (docs, next) {
 
 ////// Aggregation Middleware
 tourSchema.pre('aggregate', function (next) {
-  console.log('Pre aggregation middleware');
+  // console.log('Pre aggregation middleware');
 
   (this as Aggregate<ITour>).pipeline().unshift({
     $match: {

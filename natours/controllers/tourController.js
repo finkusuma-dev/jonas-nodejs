@@ -86,7 +86,7 @@ const getAllTours = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.getAllTours = getAllTours;
 const getTour = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    console.log(id, typeof id);
+    // console.log(id, typeof id);
     // const tour = tours.find((el) => el.id === id);
     try {
         const tour = yield tourModel_1.default.findById(id);
