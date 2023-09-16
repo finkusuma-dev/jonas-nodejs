@@ -6,6 +6,13 @@ export async function connectDb() {
   // dotenv.config({ path: './config.env' }); ///load custom env file
 
   let dbConnection = process.env.DATABASE;
+  if (dbConnection?.includes('<PASSWORD>')) {
+    // console.log('replace conn string password', process.env.DATABASE_PASSWORD);
+    dbConnection = dbConnection.replace(
+      '<PASSWORD>',
+      process.env.DATABASE_PASSWORD as string,
+    );
+  }
   // if (isTest || process.argv.includes('--test')) {
   if (process.env.NODE_ENV === 'test') {
     dbConnection = process.env.DATABASE_TEST;

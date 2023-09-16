@@ -43,6 +43,10 @@ function connectDb() {
     return __awaiter(this, void 0, void 0, function* () {
         // dotenv.config({ path: './config.env' }); ///load custom env file
         let dbConnection = process.env.DATABASE;
+        if (dbConnection === null || dbConnection === void 0 ? void 0 : dbConnection.includes('<PASSWORD>')) {
+            // console.log('replace conn string password', process.env.DATABASE_PASSWORD);
+            dbConnection = dbConnection.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
+        }
         // if (isTest || process.argv.includes('--test')) {
         if (process.env.NODE_ENV === 'test') {
             dbConnection = process.env.DATABASE_TEST;
