@@ -145,7 +145,7 @@ describe('Testing Tours CRUD', () => {
       expect(res.data.data.tour.name).toMatch(/^aaaaaaaaaa$/);
     });
 
-    test('FAILED to add new tour (name<10 & name>30) ', async () => {
+    test('Fails to add a new tour (name < 10 characters or name > 30 characters', async () => {
       expect.assertions(2);
       try {
         await axios.post(URL + '/tours', {
@@ -179,7 +179,7 @@ describe('Testing Tours CRUD', () => {
         );
       }
     });
-    test('FAILED to add new tour (priceDiscount >= price)', async () => {
+    test('Fails to add a new tour (priceDiscount >= price)', async () => {
       expect.assertions(1);
       try {
         const res = await axios.post(URL + '/tours', {
@@ -240,7 +240,7 @@ describe('Testing Tours CRUD', () => {
     });
   });
 
-  describe('Testing GET Tours with Querystring', () => {
+  describe('Testing GET Tours with Querystring. (Use 6 tours data)', () => {
     beforeAll(() => {
       return (async function () {
         await dbUtils.clearData();
@@ -287,7 +287,7 @@ describe('Testing Tours CRUD', () => {
       });
     });
 
-    describe('Sorting', () => {
+    describe('Sorting. (Only use the first 3 data from previously to easily compare order of the property)', () => {
       /// Only use 3 tours data for sorting test
       beforeAll(() => {
         return (async function () {
