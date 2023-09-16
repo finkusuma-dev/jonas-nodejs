@@ -3,35 +3,38 @@
 ## How to Setup
 
 1. After clone, run:
-   ```bash
-   npm install
-   ```
+
+      ```bash
+      npm install
+      ```
+
 2. Rename or copy **config.env.example** to **config.env**.
    In the **config.env** file, set the `DATABASE` env param with mongodb connection string. If you are using MongoDb Atlas, also set the `DATABASE_PASSWORD` with your atlas user's password.
 
-   ```text
-   ### config.env
+      ```shell
+      ### config.env
 
-   NODE_ENV=development
-   PORT=3000
+      NODE_ENV=development
+      PORT=3000
 
-   # Local or remote mongodb atlas connection string
-   DATABASE=mongodb://127.0.0.1:27017/natours
+      # Local or remote mongodb atlas connection string
+      DATABASE=mongodb://127.0.0.1:27017/natours
 
-   # Mongodb path for testing with jest
-   DATABASE_TEST=mongodb://127.0.0.1:27017/natours_test
+      # Mongodb path for testing with jest
+      DATABASE_TEST=mongodb://127.0.0.1:27017/natours_test
 
-   # Atlas password
-   DATABASE_PASSWORD=your_mongodb_password
-   ```
+      # Atlas password
+      DATABASE_PASSWORD=your_mongodb_password
+      ```
 
 3. Run `npm run server:dev` to start the server. Or `npm run start:dev` to also running the typescript compiler. These messages will appear in the terminal once the server starts listening and successfully establishes a database connection:
-   ```bash
-   Connect to DB: mongodb://127.0.0.1:27017/natours
-   process.env.NODE_ENV development
-   server listening port 3000
-   Db connected
-   ```
+
+      ```shell
+        Connect to DB: mongodb://127.0.0.1:27017/natours
+        process.env.NODE_ENV development
+        server listening port 3000
+        Db connected
+      ```
 
 ## Testing Routes
 
@@ -47,8 +50,8 @@ To initiate the tests, execute `npm test` or `npm run test`.
 
 **Tests output**
 
-```terminal
-  PASS  test/tour.test.ts
+```shell
+PASS  test/tour.test.ts
   Testing Tours CRUD
     Testing add, get a tour, update, and delete
       ✓ Add new tour. Has slug & durationWeek (virtual prop) (88 ms)
