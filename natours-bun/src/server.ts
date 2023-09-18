@@ -1,6 +1,9 @@
-import app from "./app";
+// import * as dbUtils from './utils/dbUtils';
 
 console.log('NODE_ENV:',process.env.NODE_ENV);
+// dbUtils.connectDb();
+
+import app from "./app";
 
 const PORT = process.env.PORT;
 app.listen(PORT, ()=>{

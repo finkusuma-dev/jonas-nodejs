@@ -1,0 +1,31 @@
+
+###
+get http://127.0.0.1:3000/api/v1/users
+
+###
+get http://127.0.0.1:3000/api/v1/users/21
+
+###
+get http://127.0.0.1:3000/api/v1/users/5c8a1d5b0190b214360dc057
+
+###
+POST http://127.0.0.1:3000/api/v1/users
+Content-Type: application/json
+
+{
+  "name": "abc",
+  "email" : "abc@g.com",
+  "role" : "member"
+}
+
+###
+PATCH  http://127.0.0.1:3000/api/v1/users/21
+Content-Type: application/json
+
+{
+  "active" : true,
+  "email" : "abc@gi.com"
+}
+
+###
+DELETE  http://127.0.0.1:3000/api/v1/users/21
