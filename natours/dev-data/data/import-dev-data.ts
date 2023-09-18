@@ -12,7 +12,7 @@ async function doImport() {
   console.log('Import jsonFile: ', jsonFile);
   await dbUtils.clearData();
   await dbUtils.importFile(jsonFile);
-  await dbUtils.clearData();
+  // await dbUtils.clearData();
 
   process.exit();
 }

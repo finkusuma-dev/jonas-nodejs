@@ -46,7 +46,7 @@ function doImport() {
         console.log('Import jsonFile: ', jsonFile);
         yield dbUtils.clearData();
         yield dbUtils.importFile(jsonFile);
-        yield dbUtils.clearData();
+        // await dbUtils.clearData();
         process.exit();
     });
 }
