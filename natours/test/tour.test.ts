@@ -327,10 +327,10 @@ describe('Testing Tours CRUD', () => {
     beforeAll(() => {
       return (async () => {
         await dbUtils.clearData();
-        let dataSorting = [...dataTours];
-        dataSorting.splice(3, 3);
+        let data = [...dataTours];
+        data.splice(3, 3);
         // console.log('dataSorting', dataSorting);
-        await dbUtils.importData(dataSorting);
+        await dbUtils.importData(data);
       })();
     });
 

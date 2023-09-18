@@ -27,7 +27,18 @@
       DATABASE_PASSWORD=your_mongodb_password
       ```
 
-3. Run `npm run server:dev` to start the server. Or `npm run start:dev` to also running the typescript compiler. These messages will appear in the terminal once the server starts listening and successfully establishes a database connection:
+3. (Optional) To fill mongo with sample data, run `node ./dev-data/data/import-dev-data.js`;
+   Messages will appear in the terminal once the import is successfull:
+
+   ```shell
+    Connect to DB: mongodb://127.0.0.1:27017/natours
+    Db connected
+    Import jsonFile:  /media/fin/node-udemy-jonas/_projects/natours/dev-data/data/tours.json
+    Delete tours success { acknowledged: true, deletedCount: 0 }
+    Insert tours success, insert count: 9
+   ```
+
+4. Run `npm run server:dev` to start the server. Or `npm run start:dev` to also running the typescript compiler. Messages will appear in the terminal once the server starts listening and successfully establishes a database connection:
 
       ```shell
         Connect to DB: mongodb://127.0.0.1:27017/natours
@@ -39,6 +50,15 @@
 ## Testing Routes
 
 To facilitate testing CRUD operations, you can install the [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) extension for VSCode and utilize the **\_rest/tours.rest** file.
+
+Make sure to change the variables on the `tours.rest` to better suit your server configurations:
+
+```shell
+@protocol = http
+@hostname = 127.0.0.1
+@port = 3000
+@api_path = /api/v1/tours
+```
 
 ## Running Tests
 
