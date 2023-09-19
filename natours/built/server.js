@@ -40,6 +40,8 @@ dotenv_1.default.config({ path: './config.env' }); ///load custom env file
 //   .then(() => console.log('Db connected'))
 //   .catch((err) => console.log('connected failed', err));
 // tourModel.init();
+process.env.rootPath = __dirname;
+console.log('process.env.rootPath', process.env.rootPath);
 dbUtils.connectDb();
 const app_1 = __importDefault(require("./app"));
 // console.log('process.env', process.env);

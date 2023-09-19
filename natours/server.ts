@@ -17,6 +17,9 @@ dotenv.config({ path: './config.env' }); ///load custom env file
 
 // tourModel.init();
 
+process.env.rootPath = __dirname;
+console.log('process.env.rootPath',process.env.rootPath);
+
 dbUtils.connectDb();
 
 import app from './app';

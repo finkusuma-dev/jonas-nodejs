@@ -1,25 +1,29 @@
+import type * as E from 'express';
+
 const fs = require('fs');
 
+const userFilePath = process.env.rootPath+'/../dev-data/data/users.json';
+console.log('init users, file', userFilePath);
 let users = JSON.parse(
-  fs.readFileSync(`${__dirname}/../dev-data/data/users.json`),
+  fs.readFileSync(userFilePath),
 );
 
-function errorJson(res, status, msg) {
+function errorJson(res:E.Response, status:number, msg:string) {
   return res.status(status).json({
     status: 'fail',
     message: msg,
   });
 }
 
-exports.checkId = (req, res, next) => {
+exports.checkId = (req: E.Request, res: E.Response, next: E.NextFunction) => {
   const { id } = req.params;
-  const user = users.find((el) => el._id === id);
+  const user = users.find((el:any) => el._id === id);
   if (!user) return errorJson(res, 404, 'Invalid ID');
 
   next();
 };
 
-exports.getAllUsers = (req, res) => {
+exports.getAllUsers = (req: E.Request, res: E.Response) => {
   res.json({
     status: 'success',
     results: users.length,
@@ -29,11 +33,11 @@ exports.getAllUsers = (req, res) => {
   });
 };
 
-exports.getUser = (req, res) => {
+exports.getUser = (req: E.Request, res: E.Response) => {
   const { id } = req.params;
   // console.log('id', id);
 
-  const user = users.find((el) => el._id === id);
+  const user = users.find((el:any) => el._id === id);
   // console.log('user', user);
   if (!user) return errorJson(res, 404, 'Invalid ID');
   // console.log('user', user);
@@ -46,7 +50,7 @@ exports.getUser = (req, res) => {
   });
 };
 
-exports.createNewUser = (req, res) => {
+exports.createNewUser = (req: E.Request, res: E.Response) => {
   // console.log(req.body);
 
   const newUser = {
@@ -65,11 +69,11 @@ exports.createNewUser = (req, res) => {
   });
 };
 
-exports.updateUser = (req, res) => {
+exports.updateUser = (req: E.Request, res: E.Response) => {
   const { id } = req.params;
   //console.log(id, req.body);
 
-  const user = users.find((aUser) => aUser._id === id);
+  const user = users.find((el:any) => el._id === id);
   // if (!user) return errorJson(res, 404, 'Invalid ID');
   //console.log('...req.body', { ...req.body });
 
@@ -78,11 +82,11 @@ exports.updateUser = (req, res) => {
   const newUser = { ...user, ...req.body };
 
   // users.splice(id, 1, newUser);
-  users = users.map((aUser) => {
-    if (aUser._id === id) {
+  users = users.map((el:any) => {
+    if (el._id === id) {
       return newUser;
     }
-    return aUser;
+    return el;
   });
 
   ///console.log(newUser);
@@ -95,7 +99,7 @@ exports.updateUser = (req, res) => {
   });
 };
 
-exports.deleteUser = (req, res) => {
+exports.deleteUser = (req: E.Request, res: E.Response) => {
   const { id } = req.params;
   //console.log(id, req.body);
 
@@ -106,7 +110,7 @@ exports.deleteUser = (req, res) => {
   //     return user;
   //   }
   // });
-  const idx = users.findIndex((user) => user._id === id);
+  const idx = users.findIndex((user:any) => user._id === id);
   if (!idx) return errorJson(res, 404, 'Invalid ID');
 
   users.splice(idx, 1);
