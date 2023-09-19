@@ -1,5 +1,6 @@
 {
-  "exclude": ["test/**/*", "./built/**/*"],
+  "include": ["src/**/*"],
+  // "exclude": ["test/**/*", "./built/**/*"],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
 

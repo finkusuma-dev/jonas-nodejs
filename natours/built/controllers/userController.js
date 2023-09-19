@@ -1,9 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require('fs');
+///TODO: Remove reading from users.json file
 const userFilePath = process.env.rootPath + '/../dev-data/data/users.json';
 console.log('init users, file', userFilePath);
-let users = JSON.parse(fs.readFileSync(userFilePath));
+let users = [];
+if (process.env.NODE_ENV !== 'test') {
+    users = JSON.parse(fs.readFileSync(userFilePath));
+}
 function errorJson(res, status, msg) {
     return res.status(status).json({
         status: 'fail',

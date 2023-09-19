@@ -1,10 +1,10 @@
 import dotenv from 'dotenv';
 import axios, { AxiosError } from 'axios';
-import * as dbUtils from '../utils/dbUtils';
+import * as dbUtils from '../src/utils/dbUtils';
 import mongoose from 'mongoose';
-import app from '../app';
+import app from '../src/app';
 import { Server } from 'http';
-import { ITour } from '../models/tourModel';
+import { ITour } from '../src/models/tourModel';
 // import { ITour } from '../models/tourModel';/
 // import type Server from '@types/express';
 
@@ -77,8 +77,10 @@ const HTTP_PORT = 3100;
 const URL = `http://127.0.0.1:${HTTP_PORT}/api/v1`;
 let serverHandle: Server<any>;
 
+dotenv.config({ path: './config.env' });
+
 beforeAll(() => {
-  async function init() {
+  async function init() {    
     // console.log('process.env.NODE_ENV', process.env.NODE_ENV);
     await dbUtils.connectDb();
     // const jsonFile = `${__dirname}/../dev-data/data/tours.json`;
@@ -95,7 +97,9 @@ beforeAll(() => {
   }
 
   ///
-  dotenv.config({ path: './config.env' });
+  
+  process.env.rootPath = __dirname;
+  // console.log('process.env.rootPath',process.env);
 
   return init();
 });

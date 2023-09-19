@@ -2,11 +2,17 @@ import type * as E from 'express';
 
 const fs = require('fs');
 
+///TODO: Remove reading from users.json file
 const userFilePath = process.env.rootPath+'/../dev-data/data/users.json';
 console.log('init users, file', userFilePath);
-let users = JSON.parse(
-  fs.readFileSync(userFilePath),
-);
+
+let users : any[] = [];
+
+if (process.env.NODE_ENV !== 'test'){
+  users = JSON.parse(
+    fs.readFileSync(userFilePath),
+  );
+}
 
 function errorJson(res:E.Response, status:number, msg:string) {
   return res.status(status).json({
