@@ -27,8 +27,15 @@
       DATABASE_PASSWORD=your_mongodb_password
       ```
 
-3. (Optional) To fill mongo with sample data, run `node ./dev-data/data/import-dev-data.js`;
-   Messages will appear in the terminal once the import is successfull:
+3. (Optional) To fill mongo with sample data, run
+
+    ```shell
+    node ./built/dev-data/data/import-dev-data.js
+    ```
+
+   (Note: All compiled javascript files are in `./built/` folder, while `/src/` folder only has typescript files.)
+
+   Messages will appear in the terminal once the import is successful:
 
    ```shell
     Connect to DB: mongodb://127.0.0.1:27017/natours
@@ -38,7 +45,7 @@
     Insert tours success, insert count: 9
    ```
 
-4. Run `npm run server:dev` to start the server. Or `npm run start:dev` to also running the typescript compiler. Messages will appear in the terminal once the server starts listening and successfully establishes a database connection:
+4. Run `npm run server:dev` to start the server. Or `npm run start:dev` to also running the typescript compiler. Messages will appear in the terminal once the server starts listening and successfully establishes the database connection:
 
       ```shell
         Connect to DB: mongodb://127.0.0.1:27017/natours
@@ -62,7 +69,7 @@ Make sure to change the variables on the `tours.rest` to better suit your server
 
 ## Running Tests
 
-In the **test/** folder, I've included files for testing with Jest. Before running tests, ensure you've set the connection string in the **config.env** file under `DATABASE_TEST`. Please note that data in this test database will be added and deleted as needed during testing and will be completely wiped once testing is completed. Therefore, avoid using your primary local MongoDB database.
+I included testing files with Jest in the **test/** folder. Before running tests, ensure you've set the db connection string in the **config.env** file under `DATABASE_TEST`. Please note that data in this test database will be added and deleted as needed during testing and will be completely wiped once testing is completed. Therefore, avoid using your primary local MongoDB database.
 
 Additionally, refrain from using a remote MongoDB database, as it can significantly increase the time required to run tests.
 
