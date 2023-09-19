@@ -1,9 +1,11 @@
 import type * as E from 'express';
+import path from 'path';
 
 const fs = require('fs');
 
 ///TODO: Remove reading from users.json file
-const userFilePath = process.env.rootPath+'/../dev-data/data/users.json';
+const userFilePath = `${path.resolve('.')}/src/dev-data/data/users.json`;
+//process.env.rootPath+'/../src/dev-data/data/users.json';
 console.log('init users, file', userFilePath);
 
 let users : any[] = [];

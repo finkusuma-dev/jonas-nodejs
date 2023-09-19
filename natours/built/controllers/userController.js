@@ -1,8 +1,13 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const path_1 = __importDefault(require("path"));
 const fs = require('fs');
 ///TODO: Remove reading from users.json file
-const userFilePath = process.env.rootPath + '/../dev-data/data/users.json';
+const userFilePath = `${path_1.default.resolve('.')}/src/dev-data/data/users.json`;
+//process.env.rootPath+'/../src/dev-data/data/users.json';
 console.log('init users, file', userFilePath);
 let users = [];
 if (process.env.NODE_ENV !== 'test') {

@@ -37,12 +37,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const dbUtils = __importStar(require("../../utils/dbUtils"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const path_1 = __importDefault(require("path"));
 dotenv_1.default.config({ path: './config.env' }); ///load custom env file
-//console.log('database', process.env.DATABASE);
+console.log('process.env.rootPath', process.env.rootPath);
 function doImport() {
     return __awaiter(this, void 0, void 0, function* () {
         yield dbUtils.connectDb();
-        const jsonFile = `${__dirname}/tours.json`;
+        const jsonFile = `${path_1.default.resolve('.')}/src/dev-data/data/tours.json`;
         console.log('Import jsonFile: ', jsonFile);
         yield dbUtils.clearData();
         yield dbUtils.importFile(jsonFile);
