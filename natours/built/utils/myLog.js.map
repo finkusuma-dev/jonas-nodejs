@@ -1,0 +1,1 @@
+{"version":3,"file":"myLog.js","sourceRoot":"","sources":["../../utils/myLog.ts"],"names":[],"mappings":";;;AAAA,SAAgB,UAAU,CAAC,GAAS,EAAE,GAAG,cAAqB;IAC5D,IAAI,OAAO,CAAC,GAAG,CAAC,QAAQ,KAAK,aAAa,EAAC;QACzC,OAAO,CAAC,GAAG,CAAC,GAAG,EAAE,cAAc,CAAC,CAAC;KAClC;AACH,CAAC;AAJD,gCAIC"}

@@ -1,6 +1,9 @@
+// import type * as E from 'express';
 import express from 'express';
 import morgan from 'morgan';
 
+import AppError from './utils/AppError';
+import globalErrorHandler from './controllers/errorController';
 import tourRouter from './routes/tourRouter';
 const userRouter = require('./routes/userRouter');
 // const connection = require('./models/connection');
@@ -22,5 +25,14 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+
+app.all('*',(req, res,next)=>{
+    
+  const err = new AppError('Can\'t find '+req.originalUrl, 404);    
+
+  next(err);
+})
+
+app.use(globalErrorHandler);
 
 export default app;

@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import * as dbUtils from './utils/dbUtils';
+import path from 'path';
 // import tourModel from './models/tourModel';
 // const dotenv = require('dotenv');
 // const mongoose = require('mongoose');
@@ -16,6 +17,10 @@ dotenv.config({ path: './config.env' }); ///load custom env file
 //   .catch((err) => console.log('connected failed', err));
 
 // tourModel.init();
+
+// process.env.rootPath = __dirname;
+// console.log('process.env.rootPath',process.env.rootPath);
+// console.log('path /',path.resolve('.'));
 
 dbUtils.connectDb();
 

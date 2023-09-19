@@ -22,29 +22,33 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dbUtils = __importStar(require("../../utils/dbUtils"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const dbUtils = __importStar(require("./utils/dbUtils"));
-// import tourModel from './models/tourModel';
-// const dotenv = require('dotenv');
-// const mongoose = require('mongoose');
-// const tourModel = require('./models/tourModel');
-// dotenv.config(); //load .env (default env file)
+const path_1 = __importDefault(require("path"));
 dotenv_1.default.config({ path: './config.env' }); ///load custom env file
-// console.log('database', process.env.DATABASE);
-// mongoose
-//   .connect(process.env.DATABASE!, {})
-//   .then(() => console.log('Db connected'))
-//   .catch((err) => console.log('connected failed', err));
-// tourModel.init();
-dbUtils.connectDb();
-const app_1 = __importDefault(require("./app"));
-// console.log('process.env', process.env);
-// console.log('process.env.PORT', process.env.PORT);
-const port = process.env.PORT;
-app_1.default.listen(port, () => {
-    console.log(`server listening port ${port}`);
-});
+console.log('process.env.rootPath', process.env.rootPath);
+function doImport() {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield dbUtils.connectDb();
+        const jsonFile = `${path_1.default.resolve('.')}/src/dev-data/data/tours.json`;
+        console.log('Import jsonFile: ', jsonFile);
+        yield dbUtils.clearData();
+        yield dbUtils.importFile(jsonFile);
+        // await dbUtils.clearData();
+        process.exit();
+    });
+}
+doImport();
