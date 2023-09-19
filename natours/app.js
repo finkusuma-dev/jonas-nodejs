@@ -3,8 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// import type * as E from 'express';
 const express_1 = __importDefault(require("express"));
 const morgan_1 = __importDefault(require("morgan"));
+const AppError_1 = __importDefault(require("./utils/AppError"));
+const errorController_1 = __importDefault(require("./controllers/errorController"));
 const tourRouter_1 = __importDefault(require("./routes/tourRouter"));
 const userRouter = require('./routes/userRouter');
 // const connection = require('./models/connection');
@@ -21,4 +24,9 @@ if (process.env.NODE_ENV === 'development') {
 }
 app.use('/api/v1/tours', tourRouter_1.default);
 app.use('/api/v1/users', userRouter);
+app.all('*', (req, res, next) => {
+    const err = new AppError_1.default('Can\'t find ' + req.originalUrl, 404);
+    next(err);
+});
+app.use(errorController_1.default);
 exports.default = app;

@@ -66,3 +66,6 @@ GET {{url}}/stats
 
 ### MONTHLY PLAN
 GET {{url}}/monthly-plan?year=2021
+
+###
+GET http://127.0.0.1:{{port}}/api/v/tours/
