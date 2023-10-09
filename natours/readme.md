@@ -69,9 +69,9 @@ Make sure to change the variables on the `tours.rest` to better suit your server
 
 ## Running Tests
 
-I included testing files with Jest in the **test/** folder. Before running tests, ensure you've set the db connection string in the **config.env** file under `DATABASE_TEST`. Please note that data in this test database will be added and deleted as needed during testing and will be completely wiped once testing is completed. Therefore, avoid using your primary local MongoDB database.
+I included testing files with Jest in the **test/** folder. Before running tests, ensure you've set the db connection string in the **config.env** file under `DATABASE_TEST`. Please note that data in this test database will be added and deleted as needed during testing and will be completely wiped once testing is completed. Therefore, avoid using your primary MongoDB database.
 
-Additionally, refrain from using a remote MongoDB database, as it can significantly increase the time required to run tests.
+Additionally, using a remote MongoDB database for testing can significantly increase test execution time. However, if you prefer to use a remote database for testing, you are able to do so.
 
 To initiate the tests, execute `npm test` or `npm run test`.
 
