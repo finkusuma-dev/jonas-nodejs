@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.monthlyPlan = exports.getStats = exports.deleteTour = exports.updateTour = exports.createNewTour = exports.getTour = exports.getAllTours = exports.aliasTop5Cheap = void 0;
 const tourModel_1 = __importDefault(require("../models/tourModel"));
 const APIFeatures_1 = __importDefault(require("../utils/APIFeatures"));
+const catchAsync_1 = __importDefault(require("../utils/catchAsync"));
 //import { Query, Document, Model, Types as M } from 'mongoose';
 // let tours = [];
 // tourModel.find({}).then((docs) => {
@@ -22,7 +23,7 @@ const APIFeatures_1 = __importDefault(require("../utils/APIFeatures"));
 // });
 function errorJson(res, status, msg) {
     new Response();
-    return res.status(status).json({
+    res.status(status).json({
         status: 'fail',
         message: msg,
     });
@@ -54,82 +55,72 @@ exports.aliasTop5Cheap = aliasTop5Cheap;
  *    Select Fields, i,e: fields=name,price  or  fields=-summary,-description.
  *    Pagination: i.e: page=2&limit=10.
  */
-const getAllTours = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        // console.log('req.query', req.query);
-        const apiFeatures = new APIFeatures_1.default(tourModel_1.default.find(), Object.keys(tourModel_1.default.schema.obj), [
-            'duration',
-            'maxGroupSize',
-            'ratingsAverage',
-            'ratingsQuantity',
-            'price',
-        ], req.query)
-            .filter()
-            .sort()
-            .selectFields()
-            .paginate();
-        /// execute query
-        const tours = yield apiFeatures.query; //or use: query.exec();
-        /// response
-        res.json({
-            status: 'success',
-            results: tours.length,
-            data: {
-                tours,
-            },
-        });
-    }
-    catch (err) {
-        errorJson(res, 404, err.message);
-    }
-});
-exports.getAllTours = getAllTours;
-const getTour = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getAllTours = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // console.log('req.query', req.query);
+    const apiFeatures = new APIFeatures_1.default(tourModel_1.default.find(), Object.keys(tourModel_1.default.schema.obj), [
+        'duration',
+        'maxGroupSize',
+        'ratingsAverage',
+        'ratingsQuantity',
+        'price',
+    ], req.query)
+        .filter()
+        .sort()
+        .selectFields()
+        .paginate();
+    /// execute query
+    const tours = yield apiFeatures.query; //or use: query.exec();
+    /// response
+    res.json({
+        status: 'success',
+        results: tours.length,
+        data: {
+            tours,
+        },
+    });
+}));
+exports.getTour = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    // console.log(id, typeof id);
+    console.log(id, typeof id);
     // const tour = tours.find((el) => el.id === id);
-    try {
-        const tour = yield tourModel_1.default.findById(id);
-        // console.log('found tour', tour);
-        if (!tour)
-            return errorJson(res, 404, 'Invalid ID');
-        // console.log('tour', tour);
-        res.json({
-            status: 'success',
-            data: {
-                tour,
-            },
-        });
-    }
-    catch (err) {
-        errorJson(res, 400, err.message);
-        //console.log('getTour failed', err);
-    }
-});
-exports.getTour = getTour;
-const createNewTour = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        // const newTour = new Tour({
-        //   ...req.body,
-        // });
-        // await newTour.save();
-        const newTour = yield tourModel_1.default.create(req.body);
-        const toursLength = yield tourModel_1.default.estimatedDocumentCount();
-        res.status(201).json({
-            status: 'success',
-            results: toursLength,
-            data: {
-                tour: newTour,
-            },
-        });
-    }
-    catch (err) {
-        return errorJson(res, 400, err.message);
-        // return errorJson(res, 400, 'Create a new tour failed', err);
-    }
-});
-exports.createNewTour = createNewTour;
-const updateTour = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // try {
+    const tour = yield tourModel_1.default.findById(id);
+    // console.log('found tour', tour); 
+    if (!tour)
+        return errorJson(res, 404, 'Invalid ID');
+    // console.log('tour', tour);
+    res.json({
+        status: 'success',
+        data: {
+            tour,
+        },
+    });
+    // } catch (err: any) {
+    //   errorJson(res, 400, err.message);
+    //   //console.log('getTour failed', err);
+    // }
+}));
+exports.createNewTour = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // try {
+    // const newTour = new Tour({
+    //   ...req.body,
+    // });
+    // await newTour.save();
+    const newTour = yield tourModel_1.default.create(req.body);
+    const toursLength = yield tourModel_1.default.estimatedDocumentCount();
+    res.status(201).json({
+        status: 'success',
+        results: toursLength,
+        data: {
+            tour: newTour,
+        },
+    });
+    // } catch (err: any) {
+    //   return errorJson(res, 400, err.message);
+    //   // return errorJson(res, 400, 'Create a new tour failed', err);
+    // }
+}));
+exports.updateTour = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
         // const a = await Tour.findOne({ _id: id });
@@ -152,9 +143,8 @@ const updateTour = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
     // tours.splice(id, 1, newTour);
     ///console.log(newTour);
-});
-exports.updateTour = updateTour;
-const deleteTour = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+}));
+exports.deleteTour = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     //console.log(id, req.body);
     // const tour = tours.find((el) => el.id === id);
@@ -173,10 +163,9 @@ const deleteTour = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return errorJson(res, 400, err.message);
         // return errorJson(res, 400, 'Delete tour failed', err);
     }
-});
-exports.deleteTour = deleteTour;
+}));
 /// AGGREGATE
-const getStats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getStats = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const tours = yield tourModel_1.default.aggregate([
             {
@@ -224,12 +213,11 @@ const getStats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     catch (err) {
         return errorJson(res, 400, err.message);
     }
-});
-exports.getStats = getStats;
+}));
 /**
  * @querystring = year
  */
-const monthlyPlan = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.monthlyPlan = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const year = req.query.year;
         const tours = yield tourModel_1.default.aggregate([
@@ -298,5 +286,4 @@ const monthlyPlan = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     catch (err) {
         return errorJson(res, 400, err.message);
     }
-});
-exports.monthlyPlan = monthlyPlan;
+}));

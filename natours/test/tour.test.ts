@@ -219,6 +219,7 @@ describe('Testing Tours CRUD', () => {
         try {
           const res2 = await axios.get(URL + '/tours/${idForUpdateDelete}');
         } catch (error) {
+          //FIXME: Global error handler return status code of 500
           expect((error as AxiosError).response?.status).toBe(400);
         }
       }

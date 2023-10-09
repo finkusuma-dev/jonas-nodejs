@@ -2,7 +2,7 @@
   "name": "natours",
   "version": "1.0.0",
   "description": "learning node, express, and mongoDb",
-  "main": "app.js",
+  "main": "built/server.js",
   "engines": {
     "node": ">=9.0.0"
   },

@@ -1,6 +1,7 @@
 import type * as E from 'express';
 import Tour from '../models/tourModel';
 import APIFeatures from '../utils/APIFeatures';
+import catchAsync from '../utils/catchAsync';
 
 //import { Query, Document, Model, Types as M } from 'mongoose';
 
@@ -11,7 +12,7 @@ import APIFeatures from '../utils/APIFeatures';
 
 function errorJson(res: E.Response, status: number, msg: any) {
   new Response();
-  return res.status(status).json({
+  res.status(status).json({
     status: 'fail',
     message: msg,
   });
@@ -56,8 +57,8 @@ export const aliasTop5Cheap = (
  *    Select Fields, i,e: fields=name,price  or  fields=-summary,-description.
  *    Pagination: i.e: page=2&limit=10.
  */
-export const getAllTours = async (req: E.Request, res: E.Response) => {
-  try {
+export const getAllTours = catchAsync(async (req: E.Request, res: E.Response) => {
+  
     // console.log('req.query', req.query);
 
     const apiFeatures = new APIFeatures(
@@ -88,20 +89,18 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
         tours,
       },
     });
-  } catch (err: any) {
-    errorJson(res, 404, err.message);
-  }
-};
 
-export const getTour = async (req: E.Request, res: E.Response) => {
+});
+
+export const getTour = catchAsync(async (req: E.Request, res: E.Response) => {
   const { id } = req.params;
-  // console.log(id, typeof id);
+  console.log(id, typeof id);
 
   // const tour = tours.find((el) => el.id === id);
-  try {
+  // try {
     const tour = await Tour.findById(id);
 
-    // console.log('found tour', tour);
+    // console.log('found tour', tour); 
     if (!tour) return errorJson(res, 404, 'Invalid ID');
     // console.log('tour', tour);
 
@@ -111,18 +110,19 @@ export const getTour = async (req: E.Request, res: E.Response) => {
         tour,
       },
     });
-  } catch (err: any) {
-    errorJson(res, 400, err.message);
-    //console.log('getTour failed', err);
-  }
-};
+  // } catch (err: any) {
+  //   errorJson(res, 400, err.message);
+  //   //console.log('getTour failed', err);
+  // }
+});
 
-export const createNewTour = async (req: E.Request, res: E.Response) => {
-  try {
+export const createNewTour = catchAsync(async (req: E.Request, res: E.Response) => {
+  // try {
     // const newTour = new Tour({
     //   ...req.body,
     // });
     // await newTour.save();
+
     const newTour = await Tour.create(req.body);
     const toursLength = await Tour.estimatedDocumentCount();
 
@@ -133,13 +133,13 @@ export const createNewTour = async (req: E.Request, res: E.Response) => {
         tour: newTour,
       },
     });
-  } catch (err: any) {
-    return errorJson(res, 400, err.message);
-    // return errorJson(res, 400, 'Create a new tour failed', err);
-  }
-};
+  // } catch (err: any) {
+  //   return errorJson(res, 400, err.message);
+  //   // return errorJson(res, 400, 'Create a new tour failed', err);
+  // }
+});
 
-export const updateTour = async (req: E.Request, res: E.Response) => {
+export const updateTour = catchAsync(async (req: E.Request, res: E.Response) => {
   const { id } = req.params;
 
   try {
@@ -164,9 +164,9 @@ export const updateTour = async (req: E.Request, res: E.Response) => {
   // tours.splice(id, 1, newTour);
 
   ///console.log(newTour);
-};
+});
 
-export const deleteTour = async (req: E.Request, res: E.Response) => {
+export const deleteTour = catchAsync(async (req: E.Request, res: E.Response) => {
   const { id } = req.params;
   //console.log(id, req.body);
 
@@ -187,11 +187,11 @@ export const deleteTour = async (req: E.Request, res: E.Response) => {
     return errorJson(res, 400, err.message);
     // return errorJson(res, 400, 'Delete tour failed', err);
   }
-};
+});
 
 /// AGGREGATE
 
-export const getStats = async (req: E.Request, res: E.Response) => {
+export const getStats = catchAsync(async (req: E.Request, res: E.Response) => {
   try {
     const tours = await Tour.aggregate([
       {
@@ -239,12 +239,12 @@ export const getStats = async (req: E.Request, res: E.Response) => {
   } catch (err: any) {
     return errorJson(res, 400, err.message);
   }
-};
+});
 
 /**
  * @querystring = year
  */
-export const monthlyPlan = async (req: E.Request, res: E.Response) => {
+export const monthlyPlan = catchAsync(async (req: E.Request, res: E.Response) => {
   try {
     const year = req.query.year;
     const tours = await Tour.aggregate([
@@ -313,4 +313,4 @@ export const monthlyPlan = async (req: E.Request, res: E.Response) => {
   } catch (err: any) {
     return errorJson(res, 400, err.message);
   }
-};
+});

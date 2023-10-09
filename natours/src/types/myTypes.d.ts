@@ -1,0 +1,1 @@
+export type TMyController = (req: E.Request, res: E.Response) => Promise<void>;
