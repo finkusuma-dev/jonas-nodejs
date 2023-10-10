@@ -7,7 +7,7 @@ const catchAsync = (fn: TMyController) => {
     // fn(req,res).catch(err => next(err));  
     
     /// Or we can write
-    fn(req,res).catch(next);  
+    fn(req,res,next).catch(next);  
   }
 }
 

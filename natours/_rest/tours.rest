@@ -57,7 +57,7 @@ Content-Type: application/json
 }
 
 ##### DELETE TOUR
-DELETE  {{url}}/64f4a58bf923c4ae08191106
+DELETE  {{url}}/6524ff7a075beac915b7a4ff
 
 ##### AGGREGATE
 

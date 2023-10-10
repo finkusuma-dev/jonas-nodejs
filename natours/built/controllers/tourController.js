@@ -16,6 +16,7 @@ exports.monthlyPlan = exports.getStats = exports.deleteTour = exports.updateTour
 const tourModel_1 = __importDefault(require("../models/tourModel"));
 const APIFeatures_1 = __importDefault(require("../utils/APIFeatures"));
 const catchAsync_1 = __importDefault(require("../utils/catchAsync"));
+const AppError_1 = __importDefault(require("../utils/AppError"));
 //import { Query, Document, Model, Types as M } from 'mongoose';
 // let tours = [];
 // tourModel.find({}).then((docs) => {
@@ -79,15 +80,20 @@ exports.getAllTours = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
         },
     });
 }));
-exports.getTour = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getTour = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     console.log(id, typeof id);
     // const tour = tours.find((el) => el.id === id);
-    // try {
-    const tour = yield tourModel_1.default.findById(id);
-    // console.log('found tour', tour); 
+    let tour;
+    try {
+        tour = yield tourModel_1.default.findById(id);
+    }
+    catch (err) {
+        return next(new AppError_1.default('No tour found with that ID. Error: ' + err));
+    }
+    // console.log('found tour', tour);
     if (!tour)
-        return errorJson(res, 404, 'Invalid ID');
+        return next(new AppError_1.default('No tour found with that ID', 404));
     // console.log('tour', tour);
     res.json({
         status: 'success',
@@ -120,7 +126,7 @@ exports.createNewTour = (0, catchAsync_1.default)((req, res) => __awaiter(void 0
     //   // return errorJson(res, 400, 'Create a new tour failed', err);
     // }
 }));
-exports.updateTour = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.updateTour = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
         // const a = await Tour.findOne({ _id: id });
@@ -130,6 +136,8 @@ exports.updateTour = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
             new: true,
             runValidators: true,
         });
+        if (!tour)
+            return next(new AppError_1.default('No tour found with that ID', 404));
         res.status(200).json({
             status: 'success',
             data: {
@@ -144,7 +152,7 @@ exports.updateTour = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
     // tours.splice(id, 1, newTour);
     ///console.log(newTour);
 }));
-exports.deleteTour = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.deleteTour = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     //console.log(id, req.body);
     // const tour = tours.find((el) => el.id === id);
@@ -153,7 +161,9 @@ exports.deleteTour = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
     ///console.log(newTour);
     try {
         ///return no content
-        yield tourModel_1.default.findByIdAndDelete(id);
+        const tour = yield tourModel_1.default.findByIdAndDelete(id);
+        if (!tour)
+            return next(new AppError_1.default('No tour found with that ID', 404));
         res.status(204).json({
             status: 'success',
             data: null,
