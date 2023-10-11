@@ -29,13 +29,17 @@ function errorJson(res, status, msg) {
         message: msg,
     });
 }
-// exports.checkId = async (req, res, next) => {
+// export const checkId = catchAsync(async (req: E.Request, res: E.Response, next: E.NextFunction) => {
 //   const { id } = req.params;
-//   const tour = await Tour.findOne({ _id: id });
+//   if (id.length != 24)
+//     return next(new AppError(':( Cannot find tour with that id', 404));
+//   const tour = await Tour.findOne({ _id: id }); 
+//   // const tour = await Tour.findById(id );
 //   // const tour = tours.find((el) => el.id === id);
-//   if (!tour) return errorJson(res, 404, 'Invalid ID');
+//   if (!tour) //return errorJson(res, 404, 'Invalid ID');
+//     return next(new AppError(':( Cannot find tour with that id', 404));
 //   next();
-// };
+// });
 // exports.checkBody = (req, res, next) => {
 //   // console.log('checkBody', req.body);
 //   // console.log('req.body[price]', req.body['price']);
@@ -85,12 +89,11 @@ exports.getTour = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0
     console.log(id, typeof id);
     // const tour = tours.find((el) => el.id === id);
     let tour;
-    try {
-        tour = yield tourModel_1.default.findById(id);
-    }
-    catch (err) {
-        return next(new AppError_1.default('No tour found with that ID. Error: ' + err));
-    }
+    // try {
+    tour = yield tourModel_1.default.findById(id);
+    // } catch (err) {
+    //   return next(new AppError('No tour found with that ID. Error: ' + err));
+    // }
     // console.log('found tour', tour);
     if (!tour)
         return next(new AppError_1.default('No tour found with that ID', 404));
@@ -128,29 +131,18 @@ exports.createNewTour = (0, catchAsync_1.default)((req, res) => __awaiter(void 0
 }));
 exports.updateTour = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    try {
-        // const a = await Tour.findOne({ _id: id });
-        // console.log('a', a);
-        // const result = await Tour.updateOne({ _id: id }, { ...req.body });
-        const tour = yield tourModel_1.default.findByIdAndUpdate(id, req.body, {
-            new: true,
-            runValidators: true,
-        });
-        if (!tour)
-            return next(new AppError_1.default('No tour found with that ID', 404));
-        res.status(200).json({
-            status: 'success',
-            data: {
-                tour,
-            },
-        });
-    }
-    catch (err) {
-        return errorJson(res, 400, err.message);
-        // return errorJson(res, 400, 'Update tour failed', err);
-    }
-    // tours.splice(id, 1, newTour);
-    ///console.log(newTour);
+    const tour = yield tourModel_1.default.findByIdAndUpdate(id, req.body, {
+        new: true,
+        runValidators: true,
+    });
+    if (!tour)
+        return next(new AppError_1.default('No tour found with that ID', 404));
+    res.status(200).json({
+        status: 'success',
+        data: {
+            tour,
+        },
+    });
 }));
 exports.deleteTour = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
@@ -159,20 +151,14 @@ exports.deleteTour = (0, catchAsync_1.default)((req, res, next) => __awaiter(voi
     // if (!tour) return errorJson(res, 404, 'Invalid ID');
     // tours.splice(id, 1, 0);
     ///console.log(newTour);
-    try {
-        ///return no content
-        const tour = yield tourModel_1.default.findByIdAndDelete(id);
-        if (!tour)
-            return next(new AppError_1.default('No tour found with that ID', 404));
-        res.status(204).json({
-            status: 'success',
-            data: null,
-        });
-    }
-    catch (err) {
-        return errorJson(res, 400, err.message);
-        // return errorJson(res, 400, 'Delete tour failed', err);
-    }
+    ///return no content
+    const tour = yield tourModel_1.default.findByIdAndDelete(id);
+    if (!tour)
+        return next(new AppError_1.default('No tour found with that ID', 404));
+    res.status(204).json({
+        status: 'success',
+        data: null,
+    });
 }));
 /// AGGREGATE
 exports.getStats = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {

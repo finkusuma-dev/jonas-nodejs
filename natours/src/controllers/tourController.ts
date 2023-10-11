@@ -17,15 +17,21 @@ function errorJson(res: E.Response, status: number, msg: any) {
     status: 'fail',
     message: msg,
   });
-}
+} 
 
-// exports.checkId = async (req, res, next) => {
+// export const checkId = catchAsync(async (req: E.Request, res: E.Response, next: E.NextFunction) => {
 //   const { id } = req.params;
-//   const tour = await Tour.findOne({ _id: id });
+//   if (id.length != 24)
+//     return next(new AppError(':( Cannot find tour with that id', 404));
+
+//   const tour = await Tour.findOne({ _id: id }); 
+//   // const tour = await Tour.findById(id );
 //   // const tour = tours.find((el) => el.id === id);
-//   if (!tour) return errorJson(res, 404, 'Invalid ID');
+//   if (!tour) //return errorJson(res, 404, 'Invalid ID');
+//     return next(new AppError(':( Cannot find tour with that id', 404));
+  
 //   next();
-// };
+// });
 
 // exports.checkBody = (req, res, next) => {
 //   // console.log('checkBody', req.body);
@@ -100,15 +106,13 @@ export const getTour = catchAsync(
 
     // const tour = tours.find((el) => el.id === id);
     let tour;
-    try {
+    // try {
       tour = await Tour.findById(id);
-    } catch (err) {
-      return next(new AppError('No tour found with that ID. Error: ' + err));
-    }
+    // } catch (err) {
+    //   return next(new AppError('No tour found with that ID. Error: ' + err));
+    // }
     // console.log('found tour', tour);
-    if (!tour) return next(
-      new AppError('No tour found with that ID', 404)
-    );
+    if (!tour) return next(new AppError('No tour found with that ID', 404));
     // console.log('tour', tour);
 
     res.json({
@@ -153,33 +157,19 @@ export const updateTour = catchAsync(
   async (req: E.Request, res: E.Response, next: E.NextFunction) => {
     const { id } = req.params;
 
-    try {
-      // const a = await Tour.findOne({ _id: id });
-      // console.log('a', a);
-      // const result = await Tour.updateOne({ _id: id }, { ...req.body });
-      const tour = await Tour.findByIdAndUpdate(id, req.body, {
-        new: true,
-        runValidators: true,
-      });
+    const tour = await Tour.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
-      if (!tour) return next(
-        new AppError('No tour found with that ID', 404)
-      );
+    if (!tour) return next(new AppError('No tour found with that ID', 404));
 
-      res.status(200).json({
-        status: 'success',
-        data: {
-          tour,
-        },
-      });
-    } catch (err: any) {
-      return errorJson(res, 400, err.message);
-      // return errorJson(res, 400, 'Update tour failed', err);
-    }
-
-    // tours.splice(id, 1, newTour);
-
-    ///console.log(newTour);
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tour,
+      },
+    });
   },
 );
 
@@ -194,22 +184,16 @@ export const deleteTour = catchAsync(
     // tours.splice(id, 1, 0);
 
     ///console.log(newTour);
-    try {
+
       ///return no content
-      const tour = await Tour.findByIdAndDelete(id);
+    const tour = await Tour.findByIdAndDelete(id);
 
-      if (!tour) return next(
-        new AppError('No tour found with that ID', 404)
-      );
+    if (!tour) return next(new AppError('No tour found with that ID', 404));
 
-      res.status(204).json({
-        status: 'success',
-        data: null,
-      });
-    } catch (err: any) {
-      return errorJson(res, 400, err.message);
-      // return errorJson(res, 400, 'Delete tour failed', err);
-    }
+    res.status(204).json({
+      status: 'success',
+      data: null,
+    });
   },
 );
 

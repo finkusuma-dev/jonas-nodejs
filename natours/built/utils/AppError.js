@@ -5,7 +5,11 @@ class AppError extends Error {
         super(message);
         this.status = 'error';
         this.statusCode = statusCode;
-        this.status = statusCode.toString().startsWith('4') ? 'fail' : 'error';
+        ///!!! When printing this error to console, message is strangely not shown.
+        /// But msg2 is shown
+        this.message = message,
+            this.msg2 = message,
+            this.status = statusCode.toString().startsWith('4') ? 'fail' : 'error';
         this.isOperational = true;
         Error.captureStackTrace(this, this.constructor);
     }
