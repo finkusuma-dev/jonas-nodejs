@@ -43,13 +43,16 @@ function connectDb() {
     return __awaiter(this, void 0, void 0, function* () {
         // dotenv.config({ path: './config.env' }); ///load custom env file
         let dbConnection = process.env.DATABASE;
+        // if (isTest || process.argv.includes('--test')) {
+        if (process.env.NODE_ENV === 'test') {
+            dbConnection = process.env.DATABASE_TEST;
+        }
         if (dbConnection === null || dbConnection === void 0 ? void 0 : dbConnection.includes('<PASSWORD>')) {
             // console.log('replace conn string password', process.env.DATABASE_PASSWORD);
             dbConnection = dbConnection.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
         }
-        // if (isTest || process.argv.includes('--test')) {
+        /// Enable the If Else below if you want to test using local MongoDb server
         if (process.env.NODE_ENV === 'test') {
-            dbConnection = process.env.DATABASE_TEST;
             console.log(`Connect to TEST DB: ${dbConnection}`);
         }
         else {
@@ -57,7 +60,7 @@ function connectDb() {
         }
         // console.log('database', dbConnection);
         const m = mongoose_1.default.connect(dbConnection, {});
-        m.then(() => console.log('Db connected')).catch((err) => console.log('connected failed', err));
+        m.then(() => console.log('Db connected'));
         return m;
     });
 }

@@ -139,17 +139,13 @@ describe('Testing Tours CRUD', () => {
         summary: '-',
       });
       idForUpdateDelete = res.data.data.tour['_id'];
+      expect(res.status).toBe(201);
       expect(res.data.results).toBe(1);
       expect(res.data.data.tour).toHaveProperty('slug');
       expect(res.data.data.tour).toHaveProperty('durationWeeks');
     });
 
-    test('Get a tour', async () => {
-      const res = await axios.get(URL + '/tours/' + idForUpdateDelete);
-      expect(res.data.data.tour.name).toMatch(/^aaaaaaaaaa$/);
-    });
-
-    test('Fails to add a new tour (name < 10 characters or name > 30 characters', async () => {
+    test('(x) Fails to add a new tour (name < 10 characters or name > 30 characters', async () => {
       expect.assertions(2);
       try {
         await axios.post(URL + '/tours', {
@@ -183,7 +179,7 @@ describe('Testing Tours CRUD', () => {
         );
       }
     });
-    test('Fails to add a new tour (priceDiscount >= price)', async () => {
+    test('(x) Fails to add a new tour (priceDiscount >= price)', async () => {
       expect.assertions(1);
       try {
         const res = await axios.post(URL + '/tours', {
@@ -203,25 +199,61 @@ describe('Testing Tours CRUD', () => {
       }
     });
 
+    test('Get a tour', async () => {
+      const res = await axios.get(URL + '/tours/' + idForUpdateDelete);
+      expect(res.data.data.tour.name).toMatch(/^aaaaaaaaaa$/);
+    });
+    
+    test('(x) Fails to get non existed tour', async () => {
+      expect.assertions(1);
+      try {        
+        const res = await axios.get(URL + '/tours/5c88fa8cf4afda39709caaff');
+      } catch (error) {
+        expect((error as AxiosError).response?.status).toBe(404);        
+      }
+    });
+
+    
+
     test('Update tour', async () => {
       const res = await axios.patch(URL + `/tours/${idForUpdateDelete}`, {
         difficulty: 'difficult',
         price: 500,
       } as ITour);
 
+      expect(res.status).toBe(200);
       expect(res.data.data.tour.difficulty).toMatch('difficult');
       expect(res.data.data.tour.price).toBe(500);
     });
-    test('Delete tour', async () => {
+    test('(x) Fails to update non existed tour', async () => {
       expect.assertions(1);
+      try {
+        
+        const res = await axios.patch(URL + `/tours/6524ff7a075beac915b7aaff`, {
+          difficulty: 'difficult',
+          price: 500,
+        } as ITour);
+        
+      } catch (error) {
+        expect((error as AxiosError).response?.status).toBe(404);
+      }
+
+    });
+    test('Delete tour', async () => {
+      
       const res = await axios.delete(URL + `/tours/${idForUpdateDelete}`);
       if (res) {
-        try {
-          const res2 = await axios.get(URL + '/tours/${idForUpdateDelete}');
-        } catch (error) {
-          expect((error as AxiosError).response?.status).toBe(400);
-        }
+        expect(res.status).toBe(204);
       }
+    });
+    test('(x) Fails to delete non existed tour', async () => {
+      expect.assertions(1);
+      try {        
+        await axios.delete(URL + `/tours/6524ff7a075beac915b7aaff`);
+      } catch (error) {
+        expect((error as AxiosError).response?.status).toBe(404);
+      }
+      
     });
     test('Add new secret tour', async () => {
       const res = await axios.post(URL + '/tours', {

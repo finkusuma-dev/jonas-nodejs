@@ -1,6 +1,8 @@
 import type * as E from 'express';
 import Tour from '../models/tourModel';
 import APIFeatures from '../utils/APIFeatures';
+import catchAsync from '../utils/catchAsync';
+import AppError from '../utils/AppError';
 
 //import { Query, Document, Model, Types as M } from 'mongoose';
 
@@ -11,19 +13,25 @@ import APIFeatures from '../utils/APIFeatures';
 
 function errorJson(res: E.Response, status: number, msg: any) {
   new Response();
-  return res.status(status).json({
+  res.status(status).json({
     status: 'fail',
     message: msg,
   });
-}
+} 
 
-// exports.checkId = async (req, res, next) => {
+// export const checkId = catchAsync(async (req: E.Request, res: E.Response, next: E.NextFunction) => {
 //   const { id } = req.params;
-//   const tour = await Tour.findOne({ _id: id });
+//   if (id.length != 24)
+//     return next(new AppError(':( Cannot find tour with that id', 404));
+
+//   const tour = await Tour.findOne({ _id: id }); 
+//   // const tour = await Tour.findById(id );
 //   // const tour = tours.find((el) => el.id === id);
-//   if (!tour) return errorJson(res, 404, 'Invalid ID');
+//   if (!tour) //return errorJson(res, 404, 'Invalid ID');
+//     return next(new AppError(':( Cannot find tour with that id', 404));
+  
 //   next();
-// };
+// });
 
 // exports.checkBody = (req, res, next) => {
 //   // console.log('checkBody', req.body);
@@ -56,8 +64,8 @@ export const aliasTop5Cheap = (
  *    Select Fields, i,e: fields=name,price  or  fields=-summary,-description.
  *    Pagination: i.e: page=2&limit=10.
  */
-export const getAllTours = async (req: E.Request, res: E.Response) => {
-  try {
+export const getAllTours = catchAsync(
+  async (req: E.Request, res: E.Response) => {
     // console.log('req.query', req.query);
 
     const apiFeatures = new APIFeatures(
@@ -88,21 +96,23 @@ export const getAllTours = async (req: E.Request, res: E.Response) => {
         tours,
       },
     });
-  } catch (err: any) {
-    errorJson(res, 404, err.message);
-  }
-};
+  },
+);
 
-export const getTour = async (req: E.Request, res: E.Response) => {
-  const { id } = req.params;
-  // console.log(id, typeof id);
+export const getTour = catchAsync(
+  async (req: E.Request, res: E.Response, next: E.NextFunction) => {
+    const { id } = req.params;
+    console.log(id, typeof id);
 
-  // const tour = tours.find((el) => el.id === id);
-  try {
-    const tour = await Tour.findById(id);
-
+    // const tour = tours.find((el) => el.id === id);
+    let tour;
+    // try {
+      tour = await Tour.findById(id);
+    // } catch (err) {
+    //   return next(new AppError('No tour found with that ID. Error: ' + err));
+    // }
     // console.log('found tour', tour);
-    if (!tour) return errorJson(res, 404, 'Invalid ID');
+    if (!tour) return next(new AppError('No tour found with that ID', 404));
     // console.log('tour', tour);
 
     res.json({
@@ -111,18 +121,21 @@ export const getTour = async (req: E.Request, res: E.Response) => {
         tour,
       },
     });
-  } catch (err: any) {
-    errorJson(res, 400, err.message);
-    //console.log('getTour failed', err);
-  }
-};
+    // } catch (err: any) {
+    //   errorJson(res, 400, err.message);
+    //   //console.log('getTour failed', err);
+    // }
+  },
+);
 
-export const createNewTour = async (req: E.Request, res: E.Response) => {
-  try {
+export const createNewTour = catchAsync(
+  async (req: E.Request, res: E.Response) => {
+    // try {
     // const newTour = new Tour({
     //   ...req.body,
     // });
     // await newTour.save();
+
     const newTour = await Tour.create(req.body);
     const toursLength = await Tour.estimatedDocumentCount();
 
@@ -133,65 +146,60 @@ export const createNewTour = async (req: E.Request, res: E.Response) => {
         tour: newTour,
       },
     });
-  } catch (err: any) {
-    return errorJson(res, 400, err.message);
-    // return errorJson(res, 400, 'Create a new tour failed', err);
-  }
-};
+    // } catch (err: any) {
+    //   return errorJson(res, 400, err.message);
+    //   // return errorJson(res, 400, 'Create a new tour failed', err);
+    // }
+  },
+);
 
-export const updateTour = async (req: E.Request, res: E.Response) => {
-  const { id } = req.params;
+export const updateTour = catchAsync(
+  async (req: E.Request, res: E.Response, next: E.NextFunction) => {
+    const { id } = req.params;
 
-  try {
-    // const a = await Tour.findOne({ _id: id });
-    // console.log('a', a);
-    // const result = await Tour.updateOne({ _id: id }, { ...req.body });
     const tour = await Tour.findByIdAndUpdate(id, req.body, {
       new: true,
       runValidators: true,
     });
+
+    if (!tour) return next(new AppError('No tour found with that ID', 404));
+
     res.status(200).json({
       status: 'success',
       data: {
         tour,
       },
     });
-  } catch (err: any) {
-    return errorJson(res, 400, err.message);
-    // return errorJson(res, 400, 'Update tour failed', err);
-  }
+  },
+);
 
-  // tours.splice(id, 1, newTour);
+export const deleteTour = catchAsync(
+  async (req: E.Request, res: E.Response, next: E.NextFunction) => {
+    const { id } = req.params;
+    //console.log(id, req.body);
 
-  ///console.log(newTour);
-};
+    // const tour = tours.find((el) => el.id === id);
+    // if (!tour) return errorJson(res, 404, 'Invalid ID');
 
-export const deleteTour = async (req: E.Request, res: E.Response) => {
-  const { id } = req.params;
-  //console.log(id, req.body);
+    // tours.splice(id, 1, 0);
 
-  // const tour = tours.find((el) => el.id === id);
-  // if (!tour) return errorJson(res, 404, 'Invalid ID');
+    ///console.log(newTour);
 
-  // tours.splice(id, 1, 0);
+      ///return no content
+    const tour = await Tour.findByIdAndDelete(id);
 
-  ///console.log(newTour);
-  try {
-    ///return no content
-    await Tour.findByIdAndDelete(id);
+    if (!tour) return next(new AppError('No tour found with that ID', 404));
+
     res.status(204).json({
       status: 'success',
       data: null,
     });
-  } catch (err: any) {
-    return errorJson(res, 400, err.message);
-    // return errorJson(res, 400, 'Delete tour failed', err);
-  }
-};
+  },
+);
 
 /// AGGREGATE
 
-export const getStats = async (req: E.Request, res: E.Response) => {
+export const getStats = catchAsync(async (req: E.Request, res: E.Response) => {
   try {
     const tours = await Tour.aggregate([
       {
@@ -239,78 +247,80 @@ export const getStats = async (req: E.Request, res: E.Response) => {
   } catch (err: any) {
     return errorJson(res, 400, err.message);
   }
-};
+});
 
 /**
  * @querystring = year
  */
-export const monthlyPlan = async (req: E.Request, res: E.Response) => {
-  try {
-    const year = req.query.year;
-    const tours = await Tour.aggregate([
-      {
-        /// deconstruct array into the docs
-        $unwind:
-          /**
-           * path: Path to the array field.
-           * includeArrayIndex: Optional name for index.
-           * preserveNullAndEmptyArrays: Optional
-           *   toggle to unwind null and empty values.
-           */
-          {
-            path: '$startDates',
-          },
-      },
-      {
-        $match: {
-          startDates: {
-            $gte: new Date(`${year}-01-01`),
-            $lte: new Date(`${year}-12-31`),
-          },
+export const monthlyPlan = catchAsync(
+  async (req: E.Request, res: E.Response) => {
+    try {
+      const year = req.query.year;
+      const tours = await Tour.aggregate([
+        {
+          /// deconstruct array into the docs
+          $unwind:
+            /**
+             * path: Path to the array field.
+             * includeArrayIndex: Optional name for index.
+             * preserveNullAndEmptyArrays: Optional
+             *   toggle to unwind null and empty values.
+             */
+            {
+              path: '$startDates',
+            },
         },
-      },
-      {
-        $group: {
-          _id: {
-            $month: {
-              /// get the month from startDates
-              date: '$startDates',
+        {
+          $match: {
+            startDates: {
+              $gte: new Date(`${year}-01-01`),
+              $lte: new Date(`${year}-12-31`),
             },
           },
-          count: {
-            $count: {},
+        },
+        {
+          $group: {
+            _id: {
+              $month: {
+                /// get the month from startDates
+                date: '$startDates',
+              },
+            },
+            count: {
+              $count: {},
+            },
+            tours: {
+              $push: '$name', /// join name as an array
+            },
           },
-          tours: {
-            $push: '$name', /// join name as an array
+        },
+        {
+          $addFields: {
+            /// add new month field with the value of the _id
+            month: '$_id',
           },
         },
-      },
-      {
-        $addFields: {
-          /// add new month field with the value of the _id
-          month: '$_id',
+        {
+          $project: {
+            _id: 0, /// remove the _id field
+          },
         },
-      },
-      {
-        $project: {
-          _id: 0, /// remove the _id field
+        {
+          $sort: {
+            count: -1,
+          },
         },
-      },
-      {
-        $sort: {
-          count: -1,
-        },
-      },
-    ]);
+      ]);
 
-    res.json({
-      status: 'success',
-      results: tours.length,
-      data: {
-        tours,
-      },
-    });
-  } catch (err: any) {
-    return errorJson(res, 400, err.message);
-  }
-};
+      res.json({
+        status: 'success',
+        results: tours.length,
+        data: {
+          tours,
+        },
+      });
+    } catch (err: any) {
+      return errorJson(res, 400, err.message);
+    }
+  },
+);
