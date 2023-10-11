@@ -28,6 +28,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 const dbUtils = __importStar(require("./utils/dbUtils"));
+process.on('uncaughtException', (err) => {
+    console.log('💥 uncaughtException:', err.name, err.message);
+    console.log('Shutting down...');
+    process.exit(1);
+});
+// import path from 'path';
 // import tourModel from './models/tourModel';
 // const dotenv = require('dotenv');
 // const mongoose = require('mongoose');
@@ -48,6 +54,13 @@ const app_1 = __importDefault(require("./app"));
 // console.log('process.env', process.env);
 // console.log('process.env.PORT', process.env.PORT);
 const port = process.env.PORT;
-app_1.default.listen(port, () => {
+const serverHandle = app_1.default.listen(port, () => {
     console.log(`server listening port ${port}`);
+});
+process.on('unhandledRejection', (err) => {
+    console.log('🔥 UnhandledRejection', err.name, err.message);
+    console.log('Shutting down...');
+    serverHandle.close(() => {
+        process.exit(1);
+    });
 });

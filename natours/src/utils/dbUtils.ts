@@ -30,9 +30,11 @@ export async function connectDb() {
   // console.log('database', dbConnection);
 
   const m = mongoose.connect(dbConnection!, {});
-  m.then(() => console.log('Db connected')).catch((err) =>
-    console.log('connected failed', err),
-  );
+  m.then(() => console.log('Db connected'))
+  // .catch((err) =>
+  //   console.log('connected failed', err),
+  // )
+  ;
 
   return m;
 }

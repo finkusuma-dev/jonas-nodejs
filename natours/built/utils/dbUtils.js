@@ -60,7 +60,7 @@ function connectDb() {
         }
         // console.log('database', dbConnection);
         const m = mongoose_1.default.connect(dbConnection, {});
-        m.then(() => console.log('Db connected')).catch((err) => console.log('connected failed', err));
+        m.then(() => console.log('Db connected'));
         return m;
     });
 }
