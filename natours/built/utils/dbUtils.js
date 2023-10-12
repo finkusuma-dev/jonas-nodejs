@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clearData = exports.importFile = exports.importData = exports.connectDb = void 0;
+exports.clearTourData = exports.importTourFile = exports.importTourData = exports.connectDb = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const fs = __importStar(require("fs"));
 const tourModel_1 = __importDefault(require("../models/tourModel"));
@@ -65,7 +65,7 @@ function connectDb() {
     });
 }
 exports.connectDb = connectDb;
-function importData(data) {
+function importTourData(data) {
     return __awaiter(this, void 0, void 0, function* () {
         // console.log('importData', data);
         // if (dataTours.length > 0) {
@@ -75,8 +75,8 @@ function importData(data) {
         });
     });
 }
-exports.importData = importData;
-function importFile(jsonFilepath) {
+exports.importTourData = importTourData;
+function importTourFile(jsonFilepath) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
             fs.readFile(jsonFilepath, 'utf-8', (err, data) => __awaiter(this, void 0, void 0, function* () {
@@ -86,7 +86,7 @@ function importFile(jsonFilepath) {
                 }
                 const parsedData = JSON.parse(data);
                 if (parsedData) {
-                    yield importData(parsedData)
+                    yield importTourData(parsedData)
                         .then(() => {
                         // console.log('import file success')
                         resolve(true);
@@ -103,10 +103,10 @@ function importFile(jsonFilepath) {
         });
     });
 }
-exports.importFile = importFile;
-function clearData() {
+exports.importTourFile = importTourFile;
+function clearTourData() {
     return __awaiter(this, void 0, void 0, function* () {
         return tourModel_1.default.deleteMany({}).then((result) => console.log('Delete tours success', result));
     });
 }
-exports.clearData = clearData;
+exports.clearTourData = clearTourData;

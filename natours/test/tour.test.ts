@@ -85,7 +85,7 @@ beforeAll(() => {
     await dbUtils.connectDb();
     // const jsonFile = `${__dirname}/../dev-data/data/tours.json`;
     // console.log('jsonFile', jsonFile);
-    await dbUtils.clearData();
+    await dbUtils.clearTourData();
     // await dbUtils.importFile(jsonFile);
 
     // console.log('process.env', process.env);
@@ -107,7 +107,7 @@ beforeAll(() => {
 afterAll(() => {
   return (async function () {
     try {
-      await dbUtils.clearData();
+      await dbUtils.clearTourData();
       await mongoose.disconnect();
       serverHandle.close();
       console.log('Db cleared & disconnected');
@@ -148,7 +148,7 @@ describe('Testing Tours CRUD', () => {
     test('(x) Fails to add a new tour (name < 10 characters or name > 30 characters', async () => {
       expect.assertions(2);
       try {
-        await axios.post(URL + '/tours', {
+        const res = await axios.post(URL + '/tours', {
           name: '123456789',
           duration: 4,
           maxGroupSize: 5,
@@ -158,7 +158,9 @@ describe('Testing Tours CRUD', () => {
         });
         // console.log('axios res', res);
       } catch (err: any) {
-        // console.log('axios error.message:', (err as AxiosError).response);
+        // console.log('axios error.message:', 
+        //   ((err as AxiosError).response!.data as any).message
+        // );
         expect(((err as AxiosError).response!.data as any).message).toMatch(
           'name: must be >= 10 chars long',
         );
@@ -279,8 +281,8 @@ describe('Testing Tours CRUD', () => {
   describe('Testing GET Tours with Querystring. (Use 6 tours data)', () => {
     beforeAll(() => {
       return (async function () {
-        await dbUtils.clearData();
-        return dbUtils.importData(dataTours); /// import 6 tours
+        await dbUtils.clearTourData();
+        return dbUtils.importTourData(dataTours); /// import 6 tours
       })();
     });
 
@@ -328,14 +330,14 @@ describe('Testing Tours CRUD', () => {
       beforeAll(() => {
         return (async function () {
           //console.log('Prepare db for sorting...');
-          await dbUtils.clearData();
+          await dbUtils.clearTourData();
 
           ///Only import the first 3 tours from dataTours
           let data = [...dataTours];
           data.splice(3, 3);
 
           // console.log('dataSorting', dataSorting);
-          await dbUtils.importData(data);
+          await dbUtils.importTourData(data);
         })();
       });
 
@@ -362,11 +364,11 @@ describe('Testing Tours CRUD', () => {
   describe('Testing Other Tours Routes', () => {
     beforeAll(() => {
       return (async () => {
-        await dbUtils.clearData();
+        await dbUtils.clearTourData();
         let data = [...dataTours];
         data.splice(3, 3);
         // console.log('dataSorting', dataSorting);
-        await dbUtils.importData(data);
+        await dbUtils.importTourData(data);
       })();
     });
 

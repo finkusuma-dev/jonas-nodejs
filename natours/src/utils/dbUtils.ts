@@ -39,7 +39,7 @@ export async function connectDb() {
   return m;
 }
 
-export async function importData(data: Object | Array<Object>) {
+export async function importTourData(data: Object | Array<Object>) {
   // console.log('importData', data);
   // if (dataTours.length > 0) {
 
@@ -49,7 +49,7 @@ export async function importData(data: Object | Array<Object>) {
   });
 }
 
-export async function importFile(jsonFilepath: string): Promise<any> {
+export async function importTourFile(jsonFilepath: string): Promise<any> {
   return new Promise((resolve, reject) => {
     fs.readFile(jsonFilepath, 'utf-8', async (err, data) => {
       // console.log('import data', String(data));/
@@ -59,7 +59,7 @@ export async function importFile(jsonFilepath: string): Promise<any> {
 
       const parsedData = JSON.parse(data);
       if (parsedData) {
-        await importData(parsedData)
+        await importTourData(parsedData)
           .then(() => {
             // console.log('import file success')
             resolve(true);
@@ -75,7 +75,7 @@ export async function importFile(jsonFilepath: string): Promise<any> {
   });
 }
 
-export async function clearData() {
+export async function clearTourData() {
   return Tour.deleteMany({}).then((result: any) =>
     console.log('Delete tours success', result),
   );

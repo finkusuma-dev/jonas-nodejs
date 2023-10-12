@@ -45,8 +45,8 @@ function doImport() {
         yield dbUtils.connectDb();
         const jsonFile = `${path_1.default.resolve('.')}/src/dev-data/data/tours.json`;
         console.log('Import jsonFile: ', jsonFile);
-        yield dbUtils.clearData();
-        yield dbUtils.importFile(jsonFile);
+        yield dbUtils.clearTourData();
+        yield dbUtils.importTourFile(jsonFile);
         // await dbUtils.clearData();
         process.exit();
     });
