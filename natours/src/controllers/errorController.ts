@@ -31,6 +31,14 @@ function sendErrorDev (err:any, res: E.Response) {
     stack: err.stack
   });    
 }
+function sendErrorTest (err:any, res: E.Response) {  
+
+  res.status(err.statusCode).json({
+    status: err.statusCode,
+    error: err,    
+    message: err.message    
+  });    
+}
 function sendErrorProd (err:any, res: E.Response) {
 
   
@@ -58,6 +66,9 @@ export default (err: any, req:E.Request, res:E.Response, next: E.NextFunction)=>
   if (process.env.NODE_ENV === 'development'){
     sendErrorDev(err, res);
 
+  } else if (process.env.NODE_ENV === 'test'){
+    sendErrorTest(err, res);
+    
   } else if (process.env.NODE_ENV === 'production'){
     
     console.log('Send error prod, err:',typeof err, err);

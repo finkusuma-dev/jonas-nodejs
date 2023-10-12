@@ -30,6 +30,13 @@ function sendErrorDev(err, res) {
         stack: err.stack
     });
 }
+function sendErrorTest(err, res) {
+    res.status(err.statusCode).json({
+        status: err.statusCode,
+        error: err,
+        message: err.message
+    });
+}
 function sendErrorProd(err, res) {
     if (err.isOperational) {
         res.status(err.statusCode).json({
@@ -51,6 +58,9 @@ exports.default = (err, req, res, next) => {
     const status = (_b = err.status) !== null && _b !== void 0 ? _b : "error";
     if (process.env.NODE_ENV === 'development') {
         sendErrorDev(err, res);
+    }
+    else if (process.env.NODE_ENV === 'test') {
+        sendErrorTest(err, res);
     }
     else if (process.env.NODE_ENV === 'production') {
         console.log('Send error prod, err:', typeof err, err);
