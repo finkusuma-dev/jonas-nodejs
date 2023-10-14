@@ -157,12 +157,24 @@ export const updateTour = catchAsync(
   async (req: E.Request, res: E.Response, next: E.NextFunction) => {
     const { id } = req.params;
 
-    const tour = await Tour.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    // const tour = await Tour.findByIdAndUpdate(id, req.body, {
+    //   new: true,
+    //   runValidators: true,
+    // });
+
+    /// Change findByIdAndUpdate with findById and manually set and save the tour
+    ///   so priceDiscount can be properly validated.
+    const tour = await Tour.findById(id);
 
     if (!tour) return next(new AppError('No tour found with that ID', 404));
+    
+    try{
+      tour.set(req.body);
+      await tour.save();     
+    } catch(err: any) {
+      console.log('error', err);
+      return next(new AppError(err.message, 400));
+    }
 
     res.status(200).json({
       status: 'success',

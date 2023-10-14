@@ -131,12 +131,23 @@ exports.createNewTour = (0, catchAsync_1.default)((req, res) => __awaiter(void 0
 }));
 exports.updateTour = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const tour = yield tourModel_1.default.findByIdAndUpdate(id, req.body, {
-        new: true,
-        runValidators: true,
-    });
+    // const tour = await Tour.findByIdAndUpdate(id, req.body, {
+    //   new: true,
+    //   runValidators: true,
+    // });
+    /// Change findByIdAndUpdate with findById and manually set and save the tour
+    ///   so priceDiscount can be properly validated.
+    const tour = yield tourModel_1.default.findById(id);
     if (!tour)
         return next(new AppError_1.default('No tour found with that ID', 404));
+    try {
+        tour.set(req.body);
+        yield tour.save();
+    }
+    catch (err) {
+        console.log('error', err);
+        return next(new AppError_1.default(err.message, 400));
+    }
     res.status(200).json({
         status: 'success',
         data: {
