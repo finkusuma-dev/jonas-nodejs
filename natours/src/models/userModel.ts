@@ -1,0 +1,136 @@
+import { query } from 'express';
+import validator from 'validator';
+import bcrypt from 'bcryptjs';
+
+import {
+  Schema,
+  Model,
+  model,
+  // Document,
+  // Types,
+  // Query,
+  // Aggregate,
+} from 'mongoose';
+import slugify from 'slugify';
+import { QueryType } from '../types/mongooseTypes';
+
+export interface IUser {
+  name: string;
+  email: string;  
+  photo: string;
+  password: string;
+  // passwordConfirm: boolean;/
+}
+
+type UserModelType = Model<IUser>;
+
+// export type userDocType = Document<unknown, {}, IUser>;
+// export type userResultDocType = userDocType &
+//   IUser & {
+//     _id: Types.ObjectId;
+//   };
+
+// export type userQueryType = Query<
+//   userResultDocType[],
+//   userResultDocType,
+//   {},
+//   IUser
+// >;
+
+// export type QueryUser = Query<
+//   (DocumentUser & IUser & { _id: Types.ObjectId })[],
+//   DocumentUser & IUser & { _id: Types.ObjectId }
+//   // {},
+//   // IUser
+//   // 'find'
+// >;
+
+const userSchema = new Schema<IUser, Model<IUser>>(
+  {
+    name: {
+      type: String,
+      required: [true, 'You must specify a name'],
+      unique: true,
+      trim: true,   
+    },
+    email: {
+      type: String,
+      unique: true,
+      trim: true,
+      lowercase: true,      
+      validate: [validator.isEmail, 'Please provide a valid email'],
+      required: [true, 'You must specify an email'],
+    },
+    photo: {
+      type: String,      
+    },
+    password: {
+      type: String,
+      required: [true, 'Please provide a password'],
+      min: 8
+    },    
+  },  
+);
+
+/// VALIDATION MIDDLEWARE
+// tourSchema.pre('validate', function (next) {
+//   if (this.priceDiscount && this.price <= this.priceDiscount) {
+//     next(
+//       new Error(
+//         `priceDiscount (${this.priceDiscount}) must be < price (${this.price})`,
+//       ),
+//     );
+//   }
+//   next();
+// });
+
+/// Document Middleware
+userSchema.pre('save', async function (next) {
+
+  /// run only if password is modified
+  if (!this.isModified('password')) return;
+  this.password = await bcrypt.hash(this.password, 12);
+
+  next(); /// if we only have 1 pre middleware like this, we can omit next().
+});
+
+// userSchema.post('save', function (doc, next) {
+//   console.log('new doc created', doc);
+//   next(); /// if we only have 1 pre middleware like this, we can omit next().
+// });
+
+///// Query Middleware
+/// use regex to define find and findOne method
+userSchema.pre(/^find/, function (next) {
+  (this as QueryType<IUser>).find({
+    password: { $ne: true },
+  });
+
+  next();
+});
+
+userSchema.post(/^find/, function (docs, next) {
+  // console.log('post find', docs);
+
+  next();
+});
+
+////// Aggregation Middleware
+// userSchema.pre('aggregate', function (next) {
+//   // console.log('Pre aggregation middleware');
+
+//   (this as Aggregate<IUser>).pipeline().unshift({
+//     $match: {
+//       secret: { $ne: true },
+//     },
+//   });
+
+//   // console.log('Aggregate pipeline', this);
+//   next();
+// });
+ 
+// const Tour = model<ITour, TourModelType>('Tour', tourSchema);
+const User = model<IUser>('User', userSchema);
+
+// module.exports = Tour;
+export default User;

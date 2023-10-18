@@ -3,29 +3,46 @@
 get http://127.0.0.1:3000/api/v1/users
 
 ###
-get http://127.0.0.1:3000/api/v1/users/21
+get http://127.0.0.1:3000/api/v1/users/65290eb038d25dfd8f219155
 
-###
-get http://127.0.0.1:3000/api/v1/users/5c8a1d5b0190b214360dc057
-
-###
+### CREATE USER
 POST http://127.0.0.1:3000/api/v1/users
 Content-Type: application/json
 
 {
-  "name": "abc",
-  "email" : "abc@g.com",
-  "role" : "member"
+  "name": "asd",
+  "email" : "asd@g.com",
+  "photo": "2.jpg",
+  "password": "asd"
 }
 
-###
-PATCH  http://127.0.0.1:3000/api/v1/users/21
+### SIGNUP
+POST http://127.0.0.1:3000/api/v1/users/signup
 Content-Type: application/json
 
 {
-  "active" : true,
-  "email" : "abc@gi.com"
+  "name": "asd",
+  "email" : "asd@g.com",
+  "photo": "asd.jpg",
+  "password": "asd"
 }
 
-###
-DELETE  http://127.0.0.1:3000/api/v1/users/21
+### SIGNIN
+POST http://127.0.0.1:3000/api/v1/users/signin
+Content-Type: application/json
+
+{
+  "name": "asd",
+  "password": "asd"
+}
+
+### UPDATE
+PATCH  http://127.0.0.1:3000/api/v1/users/65290a6960a89f67683ffcf9
+Content-Type: application/json
+
+{  
+  "email" : "abc@ccccom"
+}
+
+### DELETE
+DELETE  http://127.0.0.1:3000/api/v1/users/65290a6960a89f67683ffcf9
