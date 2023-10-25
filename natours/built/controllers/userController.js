@@ -72,12 +72,15 @@ exports.updateUser = (0, catchAsync_1.default)((req, res, next) => __awaiter(voi
     // if (!user) return errorJson(res, 404, 'Invalid ID');
     //console.log('...req.body', { ...req.body });
     // let newUser = Object.assign({}, user);
-    const user = yield userModel_1.default.findByIdAndUpdate(id, req.body, {
-        new: true,
-        runValidators: true,
-    });
+    // const user = await User.findByIdAndUpdate(id, req.body, {
+    //   new: true,
+    //   runValidators: true,
+    // });
+    let user = yield userModel_1.default.findById(id);
     if (!user)
         return next(new AppError_1.default('No tour found with that ID', 404));
+    user.set(req.body);
+    user.save();
     ///console.log(newUser);
     res.status(200).json({
         status: 'success',

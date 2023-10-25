@@ -1,23 +1,15 @@
+@url = http://{{hostname}}:{{port}}/api/{{version}}/users
 
 ###
-get http://127.0.0.1:3000/api/v1/users
+get {{url}}
+Authorization: Bearer {{token}}
 
 ###
-get http://127.0.0.1:3000/api/v1/users/65290eb038d25dfd8f219155
+get {{url}}/65290eb038d25dfd8f219155
 
-### CREATE USER
-POST http://127.0.0.1:3000/api/v1/users
-Content-Type: application/json
 
-{
-  "name": "asd",
-  "email" : "asd@g.com",
-  "photo": "2.jpg",
-  "password": "asd"
-}
-
-### SIGNUP
-POST http://127.0.0.1:3000/api/v1/users/signup
+### SIGNUP User
+POST {{url}}/signup
 Content-Type: application/json
 
 {
@@ -27,22 +19,57 @@ Content-Type: application/json
   "password": "asd"
 }
 
-### SIGNIN
-POST http://127.0.0.1:3000/api/v1/users/signin
+### SIGNUP Admin
+POST {{url}}/signup
 Content-Type: application/json
 
 {
-  "name": "asd",
+  "name": "admin",
+  "email" : "admin@g.com",
+  "role" : "admin",
+  "photo": "admin.jpg",
+  "password": "admin"
+}
+
+### LOGIN
+# @name LOGIN
+POST {{url}}/login
+Content-Type: application/json
+
+{
+  "email": "asd@g.com",
   "password": "asd"
 }
 
-### UPDATE
-PATCH  http://127.0.0.1:3000/api/v1/users/65290a6960a89f67683ffcf9
+### // Get token from (named) request: LOGIN
+@token = {{LOGIN.response.body.$.token}}
+
+### VERIFY JWT
+
+POST {{url}}/verifyjwt
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+
+}
+
+### VERIFY JWT ERROR
+POST {{url}}/verifyjwt
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1MmZkYTExMzg5MzgzNDI1N2RlN2U0ZiIsImlhdCI6MTY5ODA3Mzk0MCwiZXhwIjoxNzA1ODQ5OTQwfQ.2EpuJKx9undutdIGlIfZpR4C-O7tIKRgEIUiEGA5g5k
+
+{
+
+}
+
+### UPDATE USER
+PATCH  {{url}}/652fda113893834257de7e4f
 Content-Type: application/json
 
 {  
-  "email" : "abc@ccccom"
+  "password" : "asd"
 }
 
-### DELETE
-DELETE  http://127.0.0.1:3000/api/v1/users/65290a6960a89f67683ffcf9
+### DELETE USER
+DELETE  {{url}}/6538e216d3c3b4fdf6e7a82c

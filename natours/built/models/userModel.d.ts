@@ -23,11 +23,16 @@
 /// <reference types="mongoose/types/virtuals" />
 /// <reference types="mongoose/types/inferschematype" />
 import { Model } from 'mongoose';
+export type Role = 'user' | 'admin' | 'guide' | 'lead-guide';
 export interface IUser {
     name: string;
     email: string;
     photo: string;
     password: string;
+    passwordChangedAt: Date;
+    role: Role;
+    verifyPassword(inputPassword: string, userPassword: string): Promise<boolean>;
+    checkIfPasswordIsChangedAfterJWTWasIssued(JwtIatTimestamp: number): boolean;
 }
 declare const User: Model<IUser, {}, {}, {}, import("mongoose").Document<unknown, {}, IUser> & IUser & {
     _id: import("mongoose").Types.ObjectId;

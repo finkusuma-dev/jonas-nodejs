@@ -19,6 +19,14 @@ function handleValidationErrorDb(err: any) {
   return new AppError(`Invalid input data. ${errors}`, 400);
 }
 
+function handleJWTError(err: any) {
+  return new AppError(`Invalid token. Please log in again!`, 401);
+}
+
+function handleJWTExpiredError(err: any) {
+  return new AppError(`Token expired. Please log in again!`, 401);
+}
+
 function sendErrorDev (err:any, res: E.Response) {
   console.log('send error dev, err:', typeof err, err);
   console.log('err message:', err.message);
@@ -53,7 +61,7 @@ function sendErrorProd (err:any, res: E.Response) {
 
     res.status(500).json({      
       status: 'error',
-      message: 'Something went wrong',     
+      message: 'Something went wrong',   
     });
   }
 }
@@ -98,6 +106,18 @@ export default (err: any, req:E.Request, res:E.Response, next: E.NextFunction)=>
       const err2 = handleValidationErrorDb(err);
       sendErrorProd(err2, res);
       return;
+    } else
+    if (err.name === 'JsonWebTokenError') {
+      const err2 = handleJWTError(err);
+      sendErrorProd(err2, res);
+      return;
+
+    } else
+    if (err.name === 'TokenExpiredError') {
+      const err2 = handleJWTExpiredError(err);
+      sendErrorProd(err2, res);
+      return;
+
     }
 
     sendErrorProd(err, res);

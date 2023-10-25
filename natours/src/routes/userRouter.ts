@@ -7,7 +7,8 @@ const router = express.Router();
 // router.param('id', userController.checkId);
 
 router.route('/signup').post(authController.signUp);
-router.route('/signin').post(authController.signIn);
+router.route('/login').post(authController.logIn);
+router.route('/verifyjwt').post(authController.verifyJwt);
 
 router
   .route('/')
@@ -18,6 +19,10 @@ router
   .route('/:id')
   .get(userController.getUser)
   .patch(userController.updateUser)
-  .delete(userController.deleteUser);
+  .delete(
+    authController.verifyJwt, 
+    authController.restrictTo('admin', 'lead-guide'),
+    userController.deleteUser
+  );
 
 module.exports = router;

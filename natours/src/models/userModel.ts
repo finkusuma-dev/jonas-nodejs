@@ -14,12 +14,18 @@ import {
 import slugify from 'slugify';
 import { QueryType } from '../types/mongooseTypes';
 
+export type Role = 'user' | 'admin' | 'guide' | 'lead-guide';
+
 export interface IUser {
   name: string;
   email: string;  
   photo: string;
   password: string;
-  // passwordConfirm: boolean;/
+  // passwordConfirm: boolean;
+  passwordChangedAt: Date,
+  role: Role,
+  verifyPassword(inputPassword: string, userPassword: string): Promise<boolean>,
+  checkIfPasswordIsChangedAfterJWTWasIssued(JwtIatTimestamp: number): boolean
 }
 
 type UserModelType = Model<IUser>;
@@ -61,14 +67,21 @@ const userSchema = new Schema<IUser, Model<IUser>>(
       validate: [validator.isEmail, 'Please provide a valid email'],
       required: [true, 'You must specify an email'],
     },
+    role: {
+      type: String,
+      enum: ['user', 'admin', 'guide', 'lead-guide'],
+      default: 'user'
+    },
     photo: {
       type: String,      
     },
     password: {
       type: String,
       required: [true, 'Please provide a password'],
-      min: 8
-    },    
+      min: 8,
+      select: false 
+    },
+    passwordChangedAt: Date,    
   },  
 );
 
@@ -90,9 +103,28 @@ userSchema.pre('save', async function (next) {
   /// run only if password is modified
   if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 12);
+  this.passwordChangedAt = new Date();
 
   next(); /// if we only have 1 pre middleware like this, we can omit next().
 });
+
+/// Create instance method. Can be accessed with user.verifyPassword
+
+// userSchema.method('verifyPassword' , function(inputPassword: string, userPassword: string):Promise<boolean> {
+//   return bcrypt.compare(inputPassword, userPassword);
+// });
+userSchema.methods.verifyPassword = function(inputPassword: string, userPassword: string):Promise<boolean> {
+  /// We cannot use this.password because the default it's not selected
+  return bcrypt.compare(inputPassword, userPassword);
+};
+
+userSchema.methods.checkIfPasswordIsChangedAfterJWTWasIssued = function(JwtIatTimestamp: number): boolean {
+  if ((this as IUser).passwordChangedAt) {
+    return ((this as IUser).passwordChangedAt.getTime() / 1000) > JwtIatTimestamp;
+  }
+  
+  return false;
+};
 
 // userSchema.post('save', function (doc, next) {
 //   console.log('new doc created', doc);

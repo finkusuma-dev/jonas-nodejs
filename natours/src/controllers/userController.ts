@@ -76,12 +76,16 @@ export const updateUser = catchAsync( async (req: E.Request, res: E.Response, ne
 
   // let newUser = Object.assign({}, user);
 
-  const user = await User.findByIdAndUpdate(id, req.body, {
-    new: true,
-    runValidators: true,
-  });
-
+  // const user = await User.findByIdAndUpdate(id, req.body, {
+  //   new: true,
+  //   runValidators: true,
+  // });
+  let user = await User.findById(id);
   if (!user) return next(new AppError('No tour found with that ID', 404));
+  
+  user.set(req.body);
+  user.save();
+
 
   ///console.log(newUser);
 

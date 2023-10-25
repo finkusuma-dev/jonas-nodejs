@@ -48,14 +48,21 @@ const userSchema = new mongoose_1.Schema({
         validate: [validator_1.default.isEmail, 'Please provide a valid email'],
         required: [true, 'You must specify an email'],
     },
+    role: {
+        type: String,
+        enum: ['user', 'admin', 'guide', 'lead-guide'],
+        default: 'user'
+    },
     photo: {
         type: String,
     },
     password: {
         type: String,
         required: [true, 'Please provide a password'],
-        min: 8
+        min: 8,
+        select: false
     },
+    passwordChangedAt: Date,
 });
 /// VALIDATION MIDDLEWARE
 // tourSchema.pre('validate', function (next) {
@@ -75,9 +82,24 @@ userSchema.pre('save', function (next) {
         if (!this.isModified('password'))
             return;
         this.password = yield bcryptjs_1.default.hash(this.password, 12);
+        this.passwordChangedAt = new Date();
         next(); /// if we only have 1 pre middleware like this, we can omit next().
     });
 });
+/// Create instance method. Can be accessed with user.verifyPassword
+// userSchema.method('verifyPassword' , function(inputPassword: string, userPassword: string):Promise<boolean> {
+//   return bcrypt.compare(inputPassword, userPassword);
+// });
+userSchema.methods.verifyPassword = function (inputPassword, userPassword) {
+    /// We cannot use this.password because the default it's not selected
+    return bcryptjs_1.default.compare(inputPassword, userPassword);
+};
+userSchema.methods.checkIfPasswordIsChangedAfterJWTWasIssued = function (JwtIatTimestamp) {
+    if (this.passwordChangedAt) {
+        return (this.passwordChangedAt.getTime() / 1000) > JwtIatTimestamp;
+    }
+    return false;
+};
 // userSchema.post('save', function (doc, next) {
 //   console.log('new doc created', doc);
 //   next(); /// if we only have 1 pre middleware like this, we can omit next().
