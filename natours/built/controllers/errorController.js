@@ -20,6 +20,12 @@ function handleValidationErrorDb(err) {
     const errors = Object.values(err.errors).map((e) => `"${e.path}" ${e.message}`).join(', ');
     return new AppError_1.default(`Invalid input data. ${errors}`, 400);
 }
+function handleJWTError(err) {
+    return new AppError_1.default(`Invalid token. Please log in again!`, 401);
+}
+function handleJWTExpiredError(err) {
+    return new AppError_1.default(`Token expired. Please log in again!`, 401);
+}
 function sendErrorDev(err, res) {
     console.log('send error dev, err:', typeof err, err);
     console.log('err message:', err.message);
@@ -28,6 +34,13 @@ function sendErrorDev(err, res) {
         error: err,
         message: err.message,
         stack: err.stack
+    });
+}
+function sendErrorTest(err, res) {
+    res.status(err.statusCode).json({
+        status: err.statusCode,
+        error: err,
+        message: err.message
     });
 }
 function sendErrorProd(err, res) {
@@ -52,6 +65,9 @@ exports.default = (err, req, res, next) => {
     if (process.env.NODE_ENV === 'development') {
         sendErrorDev(err, res);
     }
+    else if (process.env.NODE_ENV === 'test') {
+        sendErrorTest(err, res);
+    }
     else if (process.env.NODE_ENV === 'production') {
         console.log('Send error prod, err:', typeof err, err);
         ///!!! Copy object with desctructuring produces different type of object.
@@ -75,6 +91,16 @@ exports.default = (err, req, res, next) => {
         }
         else if (err.name === 'ValidationError') {
             const err2 = handleValidationErrorDb(err);
+            sendErrorProd(err2, res);
+            return;
+        }
+        else if (err.name === 'JsonWebTokenError') {
+            const err2 = handleJWTError(err);
+            sendErrorProd(err2, res);
+            return;
+        }
+        else if (err.name === 'TokenExpiredError') {
+            const err2 = handleJWTExpiredError(err);
             sendErrorProd(err2, res);
             return;
         }

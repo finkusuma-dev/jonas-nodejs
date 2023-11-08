@@ -1,31 +1,92 @@
+@url = http://{{hostname}}:{{port}}/api/{{version}}/users
 
 ###
-get http://127.0.0.1:3000/api/v1/users
+get {{url}}
+Authorization: Bearer {{token}}
 
 ###
-get http://127.0.0.1:3000/api/v1/users/21
+get {{url}}/65290eb038d25dfd8f219155
 
-###
-get http://127.0.0.1:3000/api/v1/users/5c8a1d5b0190b214360dc057
 
-###
-POST http://127.0.0.1:3000/api/v1/users
+### SIGNUP User
+POST {{url}}/signup
 Content-Type: application/json
 
 {
-  "name": "abc",
-  "email" : "abc@g.com",
-  "role" : "member"
+  "name": "fin",
+  "email" : "ac_rivvin@yahoo.com",
+  "photo": "fin.jpg",
+  "password": "fin"
 }
 
-###
-PATCH  http://127.0.0.1:3000/api/v1/users/21
+### SIGNUP Admin
+POST {{url}}/signup
 Content-Type: application/json
 
 {
-  "active" : true,
-  "email" : "abc@gi.com"
+  "name": "admin",
+  "email" : "admin@g.com",
+  "role" : "admin",
+  "photo": "admin.jpg",
+  "password": "admin"
 }
 
-###
-DELETE  http://127.0.0.1:3000/api/v1/users/21
+### LOGIN
+# @name LOGIN
+POST {{url}}/login
+Content-Type: application/json
+
+{
+  "email": "ac_rivvin@yahoo.com",
+  "password": "fin2"
+}
+
+### // Get token from (named) request: LOGIN
+@token = {{LOGIN.response.body.$.token}}
+
+# ### VERIFY JWT
+
+# POST {{url}}/verifyjwt
+# Content-Type: application/json
+# Authorization: Bearer {{token}}
+
+# {
+
+# }
+
+# ### VERIFY JWT ERROR
+# POST {{url}}/verifyjwt
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1MmZkYTExMzg5MzgzNDI1N2RlN2U0ZiIsImlhdCI6MTY5ODA3Mzk0MCwiZXhwIjoxNzA1ODQ5OTQwfQ.2EpuJKx9undutdIGlIfZpR4C-O7tIKRgEIUiEGA5g5k
+
+# {
+
+# }
+
+### FORGOT PASSWORD
+POST {{url}}/forgotPassword
+Content-Type: application/json
+
+{
+  "email": "ac_rivvin@yahoo.com" 
+}
+
+### RESET PASSWORD
+PATCH {{url}}/resetPassword/44c6fcefcc80bbc290312a994ba4200cde1d69468ba943e265c0442f2322d798
+Content-Type: application/json
+
+{
+  "email": "ac_rivvin@yahoo.com",
+  "password": "fin"
+}
+
+### UPDATE USER
+PATCH  {{url}}/6548edaf14e52fb7551e5f8d
+Content-Type: application/json
+
+{  
+  "password" : "fin"
+}
+
+### DELETE USER
+DELETE  {{url}}/6538e216d3c3b4fdf6e7a82c

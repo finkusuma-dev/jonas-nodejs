@@ -112,7 +112,11 @@ tourSchema.path('priceDiscount').validate(function (val) {
     if (this instanceof mongoose_1.Document) {
         return val < this.price;
     }
-    /// on before update, this refers to Query which we cannot get the document's price
+    /// On before update, this refers to Query which we cannot get the document's price.
+    /// We can only get the query values
+    // if (this instanceof Query){
+    //   (this as QueryType<ITour>).get('price')
+    // } else 
 }, `must be < price`);
 /// VALIDATION MIDDLEWARE
 // tourSchema.pre('validate', function (next) {
