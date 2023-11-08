@@ -31,9 +31,11 @@ const userController = __importStar(require("../controllers/userController"));
 const authController = __importStar(require("../controllers/authController"));
 const router = express_1.default.Router();
 // router.param('id', userController.checkId);
-router.route('/signup').post(authController.signUp);
-router.route('/login').post(authController.logIn);
-router.route('/verifyjwt').post(authController.verifyJwt);
+router.post('/signup', authController.signUp);
+router.post('/login', authController.logIn);
+// router.route('/verifyjwt').post(authController.verifyJwt);
+router.post('/forgotPassword', authController.forgotPassword);
+router.patch('/resetPassword/:token', authController.resetPassword);
 router
     .route('/')
     .get(userController.getAllUsers)

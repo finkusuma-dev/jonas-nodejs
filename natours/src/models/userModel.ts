@@ -1,6 +1,7 @@
 import { query } from 'express';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 import {
   Schema,
@@ -19,13 +20,16 @@ export type Role = 'user' | 'admin' | 'guide' | 'lead-guide';
 export interface IUser {
   name: string;
   email: string;  
+  role: Role,
   photo: string;
   password: string;
   // passwordConfirm: boolean;
   passwordChangedAt: Date,
-  role: Role,
+  passwordResetToken: string,
+  passwordResetExpired: Date,
   verifyPassword(inputPassword: string, userPassword: string): Promise<boolean>,
-  checkIfPasswordIsChangedAfterJWTWasIssued(JwtIatTimestamp: number): boolean
+  checkIfPasswordIsChangedAfterJWTWasIssued(JwtIatTimestamp: number): boolean,
+  createPasswordResetToken(): string
 }
 
 type UserModelType = Model<IUser>;
@@ -82,6 +86,8 @@ const userSchema = new Schema<IUser, Model<IUser>>(
       select: false 
     },
     passwordChangedAt: Date,    
+    passwordResetToken: String,  
+    passwordResetExpired: Date,  
   },  
 );
 
@@ -105,6 +111,8 @@ userSchema.pre('save', async function (next) {
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordChangedAt = new Date();
 
+  console.log('password is changed:', this.password, this.passwordChangedAt);
+
   next(); /// if we only have 1 pre middleware like this, we can omit next().
 });
 
@@ -125,6 +133,23 @@ userSchema.methods.checkIfPasswordIsChangedAfterJWTWasIssued = function(JwtIatTi
   
   return false;
 };
+
+userSchema.methods.createPasswordResetToken = function(): string {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  const hash = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+  (this as IUser).passwordResetToken = hash;
+  (this as IUser).passwordResetExpired = new Date(Date.now() + 10 * 60 * 1000);  
+
+  console.log(
+    '>Password Reset token:', resetToken,
+    'hash:', hash,
+    'expired:', this.passwordResetExpired
+  );
+
+  return resetToken;
+}
 
 // userSchema.post('save', function (doc, next) {
 //   console.log('new doc created', doc);

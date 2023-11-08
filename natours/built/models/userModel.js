@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const validator_1 = __importDefault(require("validator"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const crypto_1 = __importDefault(require("crypto"));
 const mongoose_1 = require("mongoose");
 // export type userDocType = Document<unknown, {}, IUser>;
 // export type userResultDocType = userDocType &
@@ -63,6 +64,8 @@ const userSchema = new mongoose_1.Schema({
         select: false
     },
     passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordResetExpired: Date,
 });
 /// VALIDATION MIDDLEWARE
 // tourSchema.pre('validate', function (next) {
@@ -83,6 +86,7 @@ userSchema.pre('save', function (next) {
             return;
         this.password = yield bcryptjs_1.default.hash(this.password, 12);
         this.passwordChangedAt = new Date();
+        console.log('password is changed:', this.password, this.passwordChangedAt);
         next(); /// if we only have 1 pre middleware like this, we can omit next().
     });
 });
@@ -99,6 +103,14 @@ userSchema.methods.checkIfPasswordIsChangedAfterJWTWasIssued = function (JwtIatT
         return (this.passwordChangedAt.getTime() / 1000) > JwtIatTimestamp;
     }
     return false;
+};
+userSchema.methods.createPasswordResetToken = function () {
+    const resetToken = crypto_1.default.randomBytes(32).toString('hex');
+    const hash = crypto_1.default.createHash('sha256').update(resetToken).digest('hex');
+    this.passwordResetToken = hash;
+    this.passwordResetExpired = new Date(Date.now() + 10 * 60 * 1000);
+    console.log('>Password Reset token:', resetToken, 'hash:', hash, 'expired:', this.passwordResetExpired);
+    return resetToken;
 };
 // userSchema.post('save', function (doc, next) {
 //   console.log('new doc created', doc);

@@ -13,10 +13,10 @@ POST {{url}}/signup
 Content-Type: application/json
 
 {
-  "name": "asd",
-  "email" : "asd@g.com",
-  "photo": "asd.jpg",
-  "password": "asd"
+  "name": "fin",
+  "email" : "ac_rivvin@yahoo.com",
+  "photo": "fin.jpg",
+  "password": "fin"
 }
 
 ### SIGNUP Admin
@@ -37,38 +37,55 @@ POST {{url}}/login
 Content-Type: application/json
 
 {
-  "email": "asd@g.com",
-  "password": "asd"
+  "email": "ac_rivvin@yahoo.com",
+  "password": "fin2"
 }
 
 ### // Get token from (named) request: LOGIN
 @token = {{LOGIN.response.body.$.token}}
 
-### VERIFY JWT
+# ### VERIFY JWT
 
-POST {{url}}/verifyjwt
+# POST {{url}}/verifyjwt
+# Content-Type: application/json
+# Authorization: Bearer {{token}}
+
+# {
+
+# }
+
+# ### VERIFY JWT ERROR
+# POST {{url}}/verifyjwt
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1MmZkYTExMzg5MzgzNDI1N2RlN2U0ZiIsImlhdCI6MTY5ODA3Mzk0MCwiZXhwIjoxNzA1ODQ5OTQwfQ.2EpuJKx9undutdIGlIfZpR4C-O7tIKRgEIUiEGA5g5k
+
+# {
+
+# }
+
+### FORGOT PASSWORD
+POST {{url}}/forgotPassword
 Content-Type: application/json
-Authorization: Bearer {{token}}
 
 {
-
+  "email": "ac_rivvin@yahoo.com" 
 }
 
-### VERIFY JWT ERROR
-POST {{url}}/verifyjwt
+### RESET PASSWORD
+PATCH {{url}}/resetPassword/44c6fcefcc80bbc290312a994ba4200cde1d69468ba943e265c0442f2322d798
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1MmZkYTExMzg5MzgzNDI1N2RlN2U0ZiIsImlhdCI6MTY5ODA3Mzk0MCwiZXhwIjoxNzA1ODQ5OTQwfQ.2EpuJKx9undutdIGlIfZpR4C-O7tIKRgEIUiEGA5g5k
 
 {
-
+  "email": "ac_rivvin@yahoo.com",
+  "password": "fin"
 }
 
 ### UPDATE USER
-PATCH  {{url}}/652fda113893834257de7e4f
+PATCH  {{url}}/6548edaf14e52fb7551e5f8d
 Content-Type: application/json
 
 {  
-  "password" : "asd"
+  "password" : "fin"
 }
 
 ### DELETE USER

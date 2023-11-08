@@ -27,12 +27,15 @@ export type Role = 'user' | 'admin' | 'guide' | 'lead-guide';
 export interface IUser {
     name: string;
     email: string;
+    role: Role;
     photo: string;
     password: string;
     passwordChangedAt: Date;
-    role: Role;
+    passwordResetToken: string;
+    passwordResetExpired: Date;
     verifyPassword(inputPassword: string, userPassword: string): Promise<boolean>;
     checkIfPasswordIsChangedAfterJWTWasIssued(JwtIatTimestamp: number): boolean;
+    createPasswordResetToken(): string;
 }
 declare const User: Model<IUser, {}, {}, {}, import("mongoose").Document<unknown, {}, IUser> & IUser & {
     _id: import("mongoose").Types.ObjectId;

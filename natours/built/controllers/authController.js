@@ -12,12 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.restrictTo = exports.verifyJwt = exports.logIn = exports.signUp = void 0;
+exports.resetPassword = exports.forgotPassword = exports.restrictTo = exports.verifyJwt = exports.logIn = exports.signUp = void 0;
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const crypto_1 = __importDefault(require("crypto"));
 // import { promisify } from 'util';
 const userModel_1 = __importDefault(require("../models/userModel"));
 const catchAsync_1 = __importDefault(require("../utils/catchAsync"));
 const AppError_1 = __importDefault(require("../utils/AppError"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const email_1 = __importDefault(require("../utils/email"));
 exports.signUp = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // console.log(req.body);
     const newUser = yield userModel_1.default.create({
@@ -115,3 +117,62 @@ const restrictTo = (...roles) => {
     };
 };
 exports.restrictTo = restrictTo;
+exports.forgotPassword = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email } = req.body;
+    /// Get user's email
+    const user = yield userModel_1.default.findOne({ email });
+    if (!user)
+        return next(new AppError_1.default('Email is not found!', 404));
+    /// Create password reset token
+    const resetToken = user.createPasswordResetToken();
+    yield user.save();
+    /// Send it to user's email
+    const url = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+    try {
+        const result = yield (0, email_1.default)({
+            to: `${user.name} <${user.email}>`,
+            subject: 'Natours - Reset Your Password (Valid for 10 min)',
+            text: `To reset your password, submit a PATCH request with your new password to: ${url}.\nIf you didn't forget 
+      your password, you can forget this email.`
+        });
+        res.json({
+            status: 'success',
+            message: result.response
+        });
+    }
+    catch (error) {
+        user.set({
+            passwordResetToken: undefined,
+            passwordResetExpired: undefined
+        });
+        yield user.save();
+        return next(new AppError_1.default(error.message, 500));
+        // res.status(500).json({
+        //   status: 'fail',
+        //   message: (error as any).message
+        // });
+    }
+}));
+exports.resetPassword = (0, catchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email, password } = req.body;
+    const hash = crypto_1.default
+        .createHash('sha256')
+        .update(req.params.token)
+        .digest('hex');
+    const user = yield userModel_1.default.findOne({ passwordResetToken: hash });
+    if (!user)
+        return next(new AppError_1.default('Token is not found!', 404));
+    if (new Date() > user.passwordResetExpired) {
+        return next(new AppError_1.default('Reset password token expired!', 401));
+    }
+    user.set({
+        password,
+        passwordResetExpired: undefined,
+        passwordResetToken: undefined
+    });
+    yield user.save();
+    res.json({
+        status: 'success',
+        message: 'Your password is successfully changed'
+    });
+}));

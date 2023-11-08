@@ -1,10 +1,12 @@
 
 import type * as E from 'express';
+import jwt, { GetPublicKeyOrSecret, JwtPayload, Secret, VerifyCallback } from 'jsonwebtoken';
+import crypto from 'crypto';
 // import { promisify } from 'util';
 import User, { IUser, Role } from '../models/userModel';
 import catchAsync from '../utils/catchAsync';
 import AppError from '../utils/AppError';
-import jwt, { GetPublicKeyOrSecret, JwtPayload, Secret, VerifyCallback } from 'jsonwebtoken';
+import sendEmail from '../utils/email';
 
 export const signUp = catchAsync(async (req: E.Request, res: E.Response) => {
   // console.log(req.body);
@@ -100,7 +102,7 @@ export const verifyJwt = catchAsync( async (req: E.Request, res: E.Response, nex
   const user = await User.findById(payload.id);
   if (!user) return next(
     new AppError('The token belong to the user that is no longer exist!', 401)
-  );
+  ); 
 
 
   /// Check if password was changed after JWT was issued      
@@ -131,3 +133,78 @@ export const restrictTo = (...roles: Array<Role>) => {
     next();
   }
 }
+
+
+export const forgotPassword = catchAsync( async (req: E.Request, res: E.Response, next: E.NextFunction) => {
+  const { email } = req.body;
+
+  /// Get user's email
+  const user = await User.findOne({ email });
+  if (!user) return next(new AppError('Email is not found!', 404));
+
+  /// Create password reset token
+  const resetToken: string = user.createPasswordResetToken();
+  await user.save();
+
+  /// Send it to user's email
+  const url = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+  
+  try {
+    const result = await sendEmail({
+      to: `${user.name} <${user.email}>`,
+      subject: 'Natours - Reset Your Password (Valid for 10 min)',
+      text: `To reset your password, submit a PATCH request with your new password to: ${url}.\nIf you didn't forget 
+      your password, you can forget this email.`
+    });
+
+    res.json({
+      status: 'success', 
+      message: result.response
+    });
+    
+  } catch (error) {
+
+    user.set({
+      passwordResetToken: undefined,
+      passwordResetExpired: undefined
+    });
+    await user.save();
+
+    return next(new AppError((error as any).message, 500));
+
+    // res.status(500).json({
+    //   status: 'fail',
+    //   message: (error as any).message
+    // });
+  }
+});
+
+
+export const resetPassword = catchAsync( async (req: E.Request, res: E.Response, next: E.NextFunction) => {
+  const { email, password } = req.body;
+
+  const hash = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOne({passwordResetToken: hash});
+  if (!user) return next(new AppError('Token is not found!', 404));
+
+  if (new Date() > user.passwordResetExpired){
+    return next(new AppError('Reset password token expired!', 401));
+  }
+
+  user.set({
+    password,    
+    passwordResetExpired: undefined,
+    passwordResetToken: undefined
+  });
+  await user.save();
+
+  res.json({
+    status: 'success',
+    message: 'Your password is successfully changed'
+  })
+});
+  
